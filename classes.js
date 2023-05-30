@@ -12,8 +12,10 @@ class Node {
 class Jumper {
     constructor(_origin){
         if(_origin instanceof Node) this.origin = _origin;
-        else this.origin = _origin.jumper;
-        this.anchorPoints = [[_origin.x, _origin.y]];
+        else if(_origin) this.origin = _origin.jumper;
+        else this.origin = null;
+        if(this.origin!=null) this.anchorPoints = [[_origin.x, _origin.y]];
+        else this.anchorPoints = [];
         this.end = null;
         this.isTravelled = false; //Reset this before performing DFS
         this.connectedJumpers = [];
@@ -59,15 +61,15 @@ class Jumper {
         this.origin.connectedJumpers.splice(this.origin.connectedJumpers.indexOf(this), 1);
         this.end.connectedJumpers.splice(this.end.connectedJumpers.indexOf(this), 1);
 
-        let deleted_jumpers;
-        if(deleted==null) deleted_jumpers = [];
-        else deleted_jumpers = deleted;
+        let deleted_jumpers = [];
+        if(deleted) deleted_jumpers = deleted;
         for(let i=0;i<this.connectedJumpers.length;i++){
             this.connectedJumpers[i].del(deleted_jumpers);
         }
         deleted_jumpers.push(this);
         jumperList.splice(jumperList.indexOf(this), 1);
         if(deleted==null) scheme_log.push([1, deleted_jumpers]);
+        else return deleted_jumpers;
     }
 };
 

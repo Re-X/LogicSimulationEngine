@@ -47,10 +47,8 @@ let focusTool = null;
 let selectedTool = null;
 
 let focusNode = null;
-let selectedNode = null;
 let selectedNodeList = []; 
 
-let focusJumperPoint = null;
 let focusJumperPointList = [];
 let selectedJumperPoint = null;
 
@@ -100,7 +98,7 @@ const toolbar = {
     }
 }
 
-function mouseWheel(){
+function mouseWheel(event){
     if(toolbar.mouseOver()){
         let s = (event.deltaY < 0) ? 5 : -5;
         if(toolbar.y + s < UI.canvasHeight-60 && toolbar.y+60*0.75*toolbar.toolList.length + s>60) toolbar.y += s;
@@ -129,60 +127,13 @@ function mousePressed(){
         if(input!=null){
             document.body.removeChild(input);
             selectedComponent.label = input.value;
-            selectedComponent = null;
+            selectedComponent = focusComponents[0];
         }
     }
-
-    if(mouseButton==RIGHT) {
-        if(selectedTool){
-            selectedTool = null;
-            document.getElementById('defaultCanvas0').style.cursor = 'unset';
-        }
-        else {
-            if(selectedNode||selectedJumperPoint) jumperList.pop();
-            else if(selectedNodeList.length){
-                for(let i=0;i<selectedNodeList.length;i++){
-                    jumperList.pop();
-                }
-            }
-            selectedNode = null;
-            selectedJumperPoint = null;
-            selectedNodeList = [];
-        }
-        return;
-    }
-
-    if(focusTool!=null) {
-        selectedTool = focusTool;
-        if(!keyIsDown(17)){
-            if(selectedTool==del) document.getElementById('defaultCanvas0').style.cursor = 'none';
-            else document.getElementById('defaultCanvas0').style.cursor = 'unset';
-        }
-    }
-    else if(selectedTool!=null && !keyIsDown(17)) {
-        if(selectedTool!=del) {
-            let comp = Object.create(selectedTool);
-            comp.construct(gridPointer.x, gridPointer.y);
-            componentList.push(comp);
-            scheme_log.push([2, [componentList.length-1]]);
-            //selectedTool = null;
-        }
-        else {
-            if(selectedNode||selectedJumperPoint) jumperList.pop();
-            else if(selectedNodeList.length){
-                for(let i=0;i<selectedNodeList.length;i++){
-                    jumperList.pop();
-                }
-            }
-            selectedNode = null;
-            selectedJumperPoint = null;
-            selectedNodeList = [];
-        }
-    }
-
-    if(focusComponents.length){
+    //add component-label
+    if(focusComponents.length){ 
         selectedComponent = focusComponents[0];
-        //add component-label
+        
         if(state[0]==0 && selectedTool==null && document.getElementById("component-label")==null){
             let input = document.createElement("input");
             input.type = "text";
@@ -199,11 +150,61 @@ function mousePressed(){
         }
         else if('act' in selectedComponent) selectedComponent.act(activeValues);
     }
-
+    
     selectionRect.x1 = pointer.x; selectionRect.y1 = pointer.y;
+
+    if(focusTool!=null) {
+        selectedTool = focusTool;
+        if(!keyIsDown(17)){
+            if(selectedTool==del) document.getElementById('defaultCanvas0').style.cursor = 'none';
+            else document.getElementById('defaultCanvas0').style.cursor = 'unset';
+        }
+        state[0] = 0; 
+        document.getElementsByClassName("sim")[0].innerHTML = "Simulate";
+    }
+
+    if(state[0] || focusTool!=null) return;
+
+    
+
+    if(mouseButton==RIGHT) {
+        if(selectedTool){
+            selectedTool = null;
+            document.getElementById('defaultCanvas0').style.cursor = 'unset';
+        }
+        else {
+            if(selectedNodeList.length){
+                for(let i=0;i<selectedNodeList.length;i++){
+                    jumperList.pop();
+                }
+            }
+            selectedNodeList = [];
+        }
+        return;
+    }
+
+    if(selectedTool!=null && !keyIsDown(17)) {
+        if(selectedTool!=del) {
+            let comp = Object.create(selectedTool);
+            comp.construct(gridPointer.x, gridPointer.y);
+            componentList.push(comp);
+            scheme_log.push([2, [componentList.length-1]]);
+            //selectedTool = null;
+        }
+        else {
+            if(selectedNodeList.length){
+                for(let i=0;i<selectedNodeList.length;i++){
+                    jumperList.pop();
+                }
+            }
+            selectedNodeList = [];
+        }
+    }
 }
 
 function mouseReleased(){
+    if(state[0]) return;
+
     if(mouseButton==LEFT && selectedTool==del && !keyIsDown(17)){
         if(focusJumperPointList.length){
             for(let i=0;i<jumperList.length;i++){
@@ -231,8 +232,9 @@ function mouseReleased(){
                 x.push(focusComponent);
                 componentList.splice(componentList.indexOf(focusComponent), 1);  
             });
-            scheme_log.push([3, x]);    
+            scheme_log.push([4, x]);    
         }
+        return;
     }
     
     if(keyIsDown(16)){
@@ -258,11 +260,7 @@ function mouseReleased(){
         selectedNodeList.splice(0, selectionRect.selectedNodes.length);
         if(x.length) scheme_log.push([0, x]);
     }
-    else if(keyIsDown(17)){
-        if(!focusNode && !focusJumperPointList.length) for(let i=0;i<selectedNodeList.length;i++){
-            jumperList[jumperList.length-1-i].anchorPoints.push([pointer.x, (pointer.y + 10*(selectedNodeList.length-1-i))]);
-        }
-    }
+    
     if(!selectionRect.selectedNodes.length && selectedTool==null && mouseButton==LEFT){
         createJumpers();
     }
@@ -301,35 +299,7 @@ function createJumpers(){
         }
         return;
     }
-    if(selectedNode || selectedJumperPoint){
-        if(focusNode){
-            if(focusNode!=selectedNode){
-                jumperList[jumperList.length-1].end = focusNode;
-                focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push([focusNode.x, focusNode.y]);
-                scheme_log.push([0, [jumperList.length-1]]);
-            }
-            else jumperList.pop();
-            selectedNode = null;
-            selectedJumperPoint = null;
-        }
-        else if(focusJumperPointList.length){
-            if(focusJumperPointList[0].jumper!=jumperList[jumperList.length-1]){
-                jumperList[jumperList.length-1].end = focusJumperPointList[0].jumper;
-                focusJumperPointList[0].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push([focusJumperPointList[0].x, focusJumperPointList[0].y]);
-                scheme_log.push([0, [jumperList.length-1]]);
-            }
-            else jumperList.pop();
-            selectedNode = null;
-            selectedJumperPoint = null;
-        }
-        else {
-            jumperList[jumperList.length-1].anchorPoints.push([pointer.x, pointer.y]);
-        }
-
-    }
-    else if(selectedNodeList.length){
+    if(selectedNodeList.length){
         if(focusNode){
             if(focusNode!=selectedNodeList[0] && selectedNodeList.length){
                 jumperList[jumperList.length-selectedNodeList.length].end = focusNode;
@@ -352,7 +322,12 @@ function createJumpers(){
             selectedNodeList.splice(0, focusJumperPointList.length);
             if(x.length) scheme_log.push([0, x]);
         }
-        else if(!keyIsDown(17)){
+        else if(keyIsDown(17)){
+            if(!focusNode && !focusJumperPointList.length) for(let i=0;i<selectedNodeList.length;i++){
+                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.push([pointer.x, (pointer.y+10*i-selectedNodeList.length*5+5)]);
+            }
+        }
+        else {
             for(let i=0;i<selectedNodeList.length;i++){
                 jumperList[jumperList.length-1-i].anchorPoints.push([pointer.x, pointer.y]);
             }
@@ -362,12 +337,13 @@ function createJumpers(){
         if(focusNode){
             jumperList.push(new Jumper(focusNode));
             focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-            selectedNode = focusNode;
+            selectedNodeList.push(focusNode);
         }
-        else if(focusJumperPoint){
-            jumperList.push(new Jumper(focusJumperPoint));
-            focusJumperPoint.jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-            selectedJumperPoint = focusJumperPoint;
+        else if(focusJumperPointList[0]){
+            jumperList.push(new Jumper(focusJumperPointList[0]));
+            focusJumperPointList[0].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
+            selectedJumperPoint = focusJumperPointList[0];
+            selectedNodeList.push(focusJumperPointList[0]);
         }
         else {
 
@@ -618,32 +594,6 @@ function loadSchematic(){
 }
 
 function drawComponents(){
-    if(mouseIsPressed && mouseButton==LEFT && selectedTool==del && !keyIsDown(17)){
-        if(focusJumperPoint){
-            for(let i=0;i<jumperList.length;i++){
-                jumperList[i].isTravelled = false;
-            }
-            focusJumperPoint.jumper.del();
-        }
-        else if(focusComponents.length==1){
-            for(let i=0;i<jumperList.length;i++){
-                jumperList[i].isTravelled = false;
-            }
-            for(let i=0;i<focusComponents[0].inputs.length;i++){
-                for(let j=0;j<focusComponents[0].inputs[i].connectedJumpers.length;j++){
-                    focusComponents[0].inputs[i].connectedJumpers[j].del();
-                }
-            }
-            for(let i=0;i<focusComponents[0].outputs.length;i++){
-                for(let j=0;j<focusComponents[0].outputs[i].connectedJumpers.length;j++){
-                    focusComponents[0].outputs[i].connectedJumpers[j].del();
-                }
-            }
-            scheme_log.push([3, [focusComponents[0]]]);
-            componentList.splice(componentList.indexOf(focusComponents[0]), 1);  
-        }
-    }
-
     focusNode = null;
     focusComponents = [];
     selectionRect.selectedNodes = [];
@@ -654,8 +604,41 @@ function drawComponents(){
             componentList[i].x+componentList[i].bounds.x2, componentList[i].y+componentList[i].bounds.y2)){
             focusComponents = [componentList[i]];
         }
+    }
+
+    if(mouseIsPressed && mouseButton==LEFT && selectedTool==del && !keyIsDown(17) && !state[0]){
+        for(let i=0;i<jumperList.length;i++){
+            jumperList[i].isTravelled = false;
+        }
+        x = [];
+        for(let i=0;i<focusJumperPointList.length;i++){
+            x.push(...focusJumperPointList[i].jumper.del([]));
+        }
+        if(x.length) scheme_log.push([1, x]);
+        if(focusComponents.length){
+            for(let i=0;i<focusComponents[0].inputs.length;i++){
+                for(let j=0;j<focusComponents[0].inputs[i].connectedJumpers.length;j++){
+                    focusComponents[0].inputs[i].connectedJumpers[j].del();
+                }
+            }
+            for(let i=0;i<focusComponents[0].outputs.length;i++){
+                for(let j=0;j<focusComponents[0].outputs[i].connectedJumpers.length;j++){
+                    focusComponents[0].outputs[i].connectedJumpers[j].del();
+                }
+            }
+            scheme_log.push([3, [componentList.indexOf(focusComponents[0]), focusComponents[0]]]);
+            componentList.splice(componentList.indexOf(focusComponents[0]), 1);  
+        }
+    }
+
+    for(let i=0;i<componentList.length;i++){
+        if((selectedTool==null || selectedTool==del) &&
+            UI.mouseInWorldRect(componentList[i].x+componentList[i].bounds.x1, componentList[i].y+componentList[i].bounds.y1, 
+            componentList[i].x+componentList[i].bounds.x2, componentList[i].y+componentList[i].bounds.y2)){
+            focusComponents = [componentList[i]];
+        }
         
-        if(mouseIsPressed && mouseButton==LEFT){
+        if(mouseIsPressed && mouseButton==LEFT && !state[0]){
             let x = componentList[i].x;
             let y = componentList[i].y;
             let ax = min(selectionRect.x1, pointer.x);
@@ -667,11 +650,6 @@ function drawComponents(){
                 if(!focusComponents.includes(componentList[i]))
                 focusComponents.push(componentList[i]);
             }
-            else{
-                if(focusComponents.includes(componentList[i])){
-                    focusComponents.splice(focusComponents.indexOf(componentList[i]), 1);
-                }
-            }
         }
         
         componentList[i].draw();
@@ -681,7 +659,7 @@ function drawComponents(){
             let x = componentList[i].inputs[j].x;
             let y = componentList[i].inputs[j].y;
             
-            if(mouseIsPressed && mouseButton==LEFT){
+            if(mouseIsPressed && mouseButton==LEFT && !state[0]){
                 let ax = min(selectionRect.x1, pointer.x);
                 let bx = max(selectionRect.x1, pointer.x);
                 let ay = min(selectionRect.y1, pointer.y);
@@ -714,7 +692,7 @@ function drawComponents(){
                 pop();
             }
 
-            if(mouseIsPressed && mouseButton==LEFT){
+            if(mouseIsPressed && mouseButton==LEFT && !state[0]){
                 let ax = min(selectionRect.x1, pointer.x);
                 let bx = max(selectionRect.x1, pointer.x);
                 let ay = min(selectionRect.y1, pointer.y);
@@ -740,9 +718,7 @@ function drawComponents(){
         }
     }
     fill(40);
-    if(selectedNode) circle(selectedNode.x, selectedNode.y, 7);
-    else if(selectedJumperPoint) circle(selectedJumperPoint.x, selectedJumperPoint.y, 7);
-    else if(selectedNodeList) {
+    if(selectedNodeList && !state[0]) {
         for(let i=0;i<selectedNodeList.length;i++){
             circle(selectedNodeList[i].x, selectedNodeList[i].y, 7);
         }
@@ -750,7 +726,6 @@ function drawComponents(){
 }
 
 function drawJumpers(){
-    focusJumperPoint = null;
     focusJumperPointList = [];
     beginShape(LINES);
     for(let i=0;i<jumperList.length;i++){
@@ -770,7 +745,6 @@ function drawJumpers(){
                 ) {
                     let x = (a1*pointer.y + pointer.x - a1*c)/(1+a1*a1);
                     let y = a1*x+c;
-                    focusJumperPoint = {x: x, y: y, jumper: jumperList[i]};
                     focusJumperPointList.push({x: x, y: y, jumper: jumperList[i]});
                 }
             }
@@ -785,22 +759,28 @@ function drawJumpers(){
                 ) {
                     let y = (a2*pointer.x + pointer.y - a2*c)/(1+a2*a2);
                     let x = a2*y+c;
-                    focusJumperPoint = {x: x, y: y, jumper: jumperList[i]};
                     focusJumperPointList.push({x: x, y: y, jumper: jumperList[i]});
                 }
             }
         }
     }
     
-    if(selectedNode || selectedJumperPoint){
-        vertex(jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1][0], 
-               jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1][1]);
-        vertex(pointer.x, pointer.y);
+    if(selectedNodeList.length && !keyIsDown(16)){
+        if(keyIsDown(17)) for(let i=0;i<selectedNodeList.length;i++){
+            vertex(jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints[jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.length-1][0], 
+                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints[jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.length-1][1]);
+            vertex(pointer.x, pointer.y+10*i-selectedNodeList.length*5+5);
+        }
+        else for(let i=0;i<selectedNodeList.length;i++){
+            vertex(jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints[jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.length-1][0], 
+                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints[jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.length-1][1]);
+            vertex(pointer.x, pointer.y);
+        }
     }
     endShape();
 
-    if(focusJumperPoint!=null) {
+    if(focusJumperPointList[0]!=null) {
         noFill();
-        circle(focusJumperPoint.x, focusJumperPoint.y, 10);
+        circle(focusJumperPointList[0].x, focusJumperPointList[0].y, 10);
     }
 }

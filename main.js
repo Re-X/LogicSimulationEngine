@@ -81,7 +81,7 @@ function draw() {
         else selectedTool.draw(gridPointer.x, gridPointer.y);
     }
 
-    if(mouseIsPressed && mouseButton==LEFT){
+    if(mouseIsPressed && mouseButton==LEFT && !keyIsDown(17) && !state[0]){
         noFill();
         rectMode(CORNERS);
         rect(selectionRect.x1, selectionRect.y1, pointer.x, pointer.y);
@@ -130,6 +130,9 @@ function undo(){
         }
     }
     else if(last[0]==3){
+        componentList.splice(last[1][0], 0, last[1][1]);
+    }
+    else if(last[0]==4){
         for(let i=0;i<last[1].length;i++){
             componentList.push(last[1][i]);
         }
