@@ -1,3 +1,5 @@
+scheme_log = [];
+
 class Node {
     constructor(_x, _y){
         this.x = _x; this.y = _y;
@@ -9,11 +11,13 @@ class Node {
 
 class Jumper {
     constructor(_origin){
-        this.anchorPoints = [];
-        this.origin = _origin;
+        if(_origin instanceof Node) this.origin = _origin;
+        else this.origin = _origin.jumper;
+        this.anchorPoints = [[_origin.x, _origin.y]];
         this.end = null;
         this.isTravelled = false; //Reset this before performing DFS
         this.connectedJumpers = [];
+        this.jumperId = -1;
     }
 
     addAnchorPoint(_point){
@@ -48,21 +52,22 @@ class Jumper {
         }
     }
 
-    del(){
+    del(deleted=null){
         if(this.isTravelled) return;
         this.isTravelled = true;
 
-        if(this.origin instanceof Node) {
-            this.origin.connectedJumpers.splice(this.origin.connectedJumpers.indexOf(this), 1);
-        }
-        else this.origin.del();
+        this.origin.connectedJumpers.splice(this.origin.connectedJumpers.indexOf(this), 1);
+        this.end.connectedJumpers.splice(this.end.connectedJumpers.indexOf(this), 1);
 
-        if(this.end instanceof Node) {
-            this.end.connectedJumpers.splice(this.end.connectedJumpers.indexOf(this), 1);    
+        let deleted_jumpers;
+        if(deleted==null) deleted_jumpers = [];
+        else deleted_jumpers = deleted;
+        for(let i=0;i<this.connectedJumpers.length;i++){
+            this.connectedJumpers[i].del(deleted_jumpers);
         }
-        else this.end.del();
-
+        deleted_jumpers.push(this);
         jumperList.splice(jumperList.indexOf(this), 1);
+        if(deleted==null) scheme_log.push([1, deleted_jumpers]);
     }
 };
 

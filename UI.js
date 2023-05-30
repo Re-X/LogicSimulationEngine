@@ -164,6 +164,7 @@ function mousePressed(){
             let comp = Object.create(selectedTool);
             comp.construct(gridPointer.x, gridPointer.y);
             componentList.push(comp);
+            scheme_log.push([2, [componentList.length-1]]);
             //selectedTool = null;
         }
         else {
@@ -204,13 +205,15 @@ function mousePressed(){
 
 function mouseReleased(){
     if(mouseButton==LEFT && selectedTool==del && !keyIsDown(17)){
-        if(focusJumperPoint){
+        if(focusJumperPointList.length){
             for(let i=0;i<jumperList.length;i++){
                 jumperList[i].isTravelled = false;
             }
-            focusJumperPoint.jumper.del();
+            for(let i=0;i<focusJumperPointList.length;i++) 
+                focusJumperPointList[i].jumper.del();
         }
         else if(focusComponents.length){
+            x = [];
             focusComponents.forEach(focusComponent => {
                 for(let i=0;i<jumperList.length;i++){
                     jumperList[i].isTravelled = false;
@@ -220,15 +223,15 @@ function mouseReleased(){
                         focusComponent.inputs[i].connectedJumpers[j].del();
                     }
                 }
-                for(let i=0;i<jumperList.length;i++){
-                    if(focusComponent.outputs.indexOf(jumperList[i].origin)!=-1 || 
-                    focusComponent.outputs.indexOf(jumperList[i].end)!=-1) {
-                        jumperList[i].del();
+                for(let i=0;i<focusComponent.outputs.length;i++){
+                    for(let j=0;j<focusComponent.outputs[i].connectedJumpers.length;j++){
+                        focusComponent.outputs[i].connectedJumpers[j].del();
                     }
                 }
+                x.push(focusComponent);
                 componentList.splice(componentList.indexOf(focusComponent), 1);  
             });
-                
+            scheme_log.push([3, x]);    
         }
     }
     
@@ -238,24 +241,26 @@ function mouseReleased(){
             selectedNodeList.push(selectionRect.selectedNodes[i]);
             jumperList.push(new Jumper(selectionRect.selectedNodes[i]));
             selectionRect.selectedNodes[i].connectedJumpers.push(jumperList[jumperList.length-1]);
-            jumperList[jumperList.length-1].anchorPoints.push({x: selectionRect.selectedNodes[i].x, y: selectionRect.selectedNodes[i].y});
         }
     }
     else if(selectedNodeList.length && selectionRect.selectedNodes.length){
+        let x = [];
         for(let i=0;i<selectedNodeList.length;i++){
             if(i==selectionRect.selectedNodes.length) break;
             if(selectionRect.selectedNodes[i]!=selectedNodeList[i]){
                 jumperList[jumperList.length-selectedNodeList.length+i].end = selectionRect.selectedNodes[i];
                 selectionRect.selectedNodes[i].connectedJumpers.push(jumperList[jumperList.length-selectedNodeList.length+i]);
-                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.push({x: selectionRect.selectedNodes[i].x, y: selectionRect.selectedNodes[i].y});
+                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.push([selectionRect.selectedNodes[i].x, selectionRect.selectedNodes[i].y]);
+                x.push(jumperList.length-selectedNodeList.length+i);
             }
             else jumperList.splice(jumperList.length-selectedNodeList.length+i, 1);
         }
         selectedNodeList.splice(0, selectionRect.selectedNodes.length);
+        if(x.length) scheme_log.push([0, x]);
     }
     else if(keyIsDown(17)){
         if(!focusNode && !focusJumperPointList.length) for(let i=0;i<selectedNodeList.length;i++){
-            jumperList[jumperList.length-1-i].anchorPoints.push({x: pointer.x, y: (pointer.y + 10*(selectedNodeList.length-1-i))});
+            jumperList[jumperList.length-1-i].anchorPoints.push([pointer.x, (pointer.y + 10*(selectedNodeList.length-1-i))]);
         }
     }
     if(!selectionRect.selectedNodes.length && selectedTool==null && mouseButton==LEFT){
@@ -264,132 +269,108 @@ function mouseReleased(){
 }
 
 function createJumpers(){
+    if(keyIsDown(16)){
+        if(focusNode){
+            if(!(selectedNodeList.includes(focusNode))){
+                selectedNodeList.push(focusNode);
+                jumperList.push(new Jumper(focusNode));
+                focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
+            }
+            else {
+                let i=selectedNodeList.indexOf(focusNode);
+                jumperList.splice(jumperList.length - selectedNodeList.length + i, 1);
+                selectedNodeList.splice(i, 1);
+            }
+        }
+        else if(focusJumperPointList.length){
+            for(let i=0;i<focusJumperPointList.length;i++){
+                let index = -1;
+                for(let j=0;j<selectedNodeList.length;j++){
+                    if(selectedNodeList[j].jumper == focusJumperPointList[i].jumper) {index = j; break;}
+                }
+                if(index==-1){
+                    selectedNodeList.push(focusJumperPointList[i]);
+                    jumperList.push(new Jumper(focusJumperPointList[i]));
+                    focusJumperPointList[i].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
+                }
+                else {
+                    jumperList.splice(jumperList.length - selectedNodeList.length + index, 1);
+                    selectedNodeList.splice(index, 1);
+                }
+            }
+        }
+        return;
+    }
     if(selectedNode || selectedJumperPoint){
         if(focusNode){
             if(focusNode!=selectedNode){
                 jumperList[jumperList.length-1].end = focusNode;
                 focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push({x: focusNode.x, y: focusNode.y});
+                jumperList[jumperList.length-1].anchorPoints.push([focusNode.x, focusNode.y]);
+                scheme_log.push([0, [jumperList.length-1]]);
             }
             else jumperList.pop();
             selectedNode = null;
             selectedJumperPoint = null;
         }
-        else if(focusJumperPoint){
-            if(focusJumperPoint.jumper!=jumperList[jumperList.length-1]){
-                jumperList[jumperList.length-1].end = focusJumperPoint.jumper;
-                focusJumperPoint.jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push({x: focusJumperPoint.x, y: focusJumperPoint.y});
+        else if(focusJumperPointList.length){
+            if(focusJumperPointList[0].jumper!=jumperList[jumperList.length-1]){
+                jumperList[jumperList.length-1].end = focusJumperPointList[0].jumper;
+                focusJumperPointList[0].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
+                jumperList[jumperList.length-1].anchorPoints.push([focusJumperPointList[0].x, focusJumperPointList[0].y]);
+                scheme_log.push([0, [jumperList.length-1]]);
             }
             else jumperList.pop();
             selectedNode = null;
             selectedJumperPoint = null;
         }
         else {
-            jumperList[jumperList.length-1].anchorPoints.push({x: pointer.x, y: pointer.y});
+            jumperList[jumperList.length-1].anchorPoints.push([pointer.x, pointer.y]);
         }
 
     }
     else if(selectedNodeList.length){
-        if(keyIsDown(16)){
-            if(focusNode){
-                if(!(selectedNodeList.includes(focusNode))){
-                    selectedNodeList.push(focusNode);
-                    jumperList.push(new Jumper(focusNode));
-                    focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-                    jumperList[jumperList.length-1].anchorPoints.push({x: focusNode.x, y: focusNode.y});
-                }
-                else {
-                    let i=selectedNodeList.indexOf(focusNode);
-                    jumperList.splice(jumperList.length - selectedNodeList.length + i, 1);
-                    selectedNodeList.splice(i, 1);
-                }
+        if(focusNode){
+            if(focusNode!=selectedNodeList[0] && selectedNodeList.length){
+                jumperList[jumperList.length-selectedNodeList.length].end = focusNode;
+                focusNode.connectedJumpers.push(jumperList[jumperList.length-selectedNodeList.length]);
+                jumperList[jumperList.length-selectedNodeList.length].anchorPoints.push([focusNode.x, focusNode.y]);
+                scheme_log.push([0, [jumperList.length-selectedNodeList.length]]);
             }
-            else if(focusJumperPointList.length){
-                for(let i=0;i<focusJumperPointList.length;i++){
-                    let index = -1;
-                    for(let j=0;j<selectedNodeList.length;j++){
-                        if(selectedNodeList[j].jumper == focusJumperPointList[i].jumper) {index = j; break;}
-                    }
-                    if(index==-1){
-                        selectedNodeList.push(focusJumperPointList[i]);
-                        jumperList.push(new Jumper(focusJumperPointList[i].jumper));
-                        focusJumperPointList[i].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-                        jumperList[jumperList.length-1].anchorPoints.push({x: focusJumperPointList[i].x, y: focusJumperPointList[i].y});
-                    }
-                    else {
-                        jumperList.splice(jumperList.length - selectedNodeList.length + index, 1);
-                        selectedNodeList.splice(index, 1);
-                    }
-                }
-            }
-            else {
-                
-            }
+            else jumperList.splice(jumperList.length-selectedNodeList.length, 1);
+            selectedNodeList.splice(0, 1);
         }
-        else {
-            if(focusNode){
-                if(focusNode!=selectedNodeList[0] && selectedNodeList.length){
-                    jumperList[jumperList.length-selectedNodeList.length].end = focusNode;
-                    focusNode.connectedJumpers.push(jumperList[jumperList.length-selectedNodeList.length]);
-                    jumperList[jumperList.length-selectedNodeList.length].anchorPoints.push({x: focusNode.x, y: focusNode.y});
-                }
-                else jumperList.splice(jumperList.length-selectedNodeList.length, 1);
-                selectedNodeList.splice(0, 1);
+        else if(focusJumperPointList.length){
+            let x = [];
+            for(let i=0;i<focusJumperPointList.length;i++){
+                if(i==selectedNodeList.length) break;
+                jumperList[jumperList.length-selectedNodeList.length+i].end = focusJumperPointList[i].jumper;
+                focusJumperPointList[i].jumper.connectedJumpers.push(jumperList[jumperList.length-selectedNodeList.length+i]);
+                jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.push([focusJumperPointList[i].x, focusJumperPointList[i].y]);
+                x.push(jumperList.length-selectedNodeList.length+i);
             }
-            else if(focusJumperPointList.length){
-                for(let i=0;i<focusJumperPointList.length;i++){
-                    if(i==selectedNodeList.length) break;
-                    jumperList[jumperList.length-selectedNodeList.length+i].end = focusJumperPointList[i].jumper;
-                    focusJumperPointList[i].jumper.connectedJumpers.push(jumperList[jumperList.length-selectedNodeList.length+i]);
-                    jumperList[jumperList.length-selectedNodeList.length+i].anchorPoints.push({x: focusJumperPointList[i].x, y: focusJumperPointList[i].y});
-            
-                }
-                selectedNodeList.splice(0, focusJumperPointList.length);
-            }
-            else if(!keyIsDown(17)){
-                for(let i=0;i<selectedNodeList.length;i++){
-                    jumperList[jumperList.length-1-i].anchorPoints.push({x: pointer.x, y: pointer.y});
-                }
+            selectedNodeList.splice(0, focusJumperPointList.length);
+            if(x.length) scheme_log.push([0, x]);
+        }
+        else if(!keyIsDown(17)){
+            for(let i=0;i<selectedNodeList.length;i++){
+                jumperList[jumperList.length-1-i].anchorPoints.push([pointer.x, pointer.y]);
             }
         }
     }
     else {
-        if(keyIsDown(16)){
-            if(focusNode){
-                selectedNodeList.push(focusNode);
-                jumperList.push(new Jumper(focusNode));
-                focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push({x: focusNode.x, y: focusNode.y});
-            }
-            else if(focusJumperPointList.length){
-                for(let i=0;i<focusJumperPointList.length;i++){
-                    selectedNodeList.push(focusJumperPointList[i]);
-                    jumperList.push(new Jumper(focusJumperPointList[i].jumper));
-                    focusJumperPointList[i].jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-                    jumperList[jumperList.length-1].anchorPoints.push({x: focusJumperPointList[i].x, y: focusJumperPointList[i].y});
-                }
-            }
-            else {
-                
-            }
+        if(focusNode){
+            jumperList.push(new Jumper(focusNode));
+            focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
+            selectedNode = focusNode;
+        }
+        else if(focusJumperPoint){
+            jumperList.push(new Jumper(focusJumperPoint));
+            focusJumperPoint.jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
+            selectedJumperPoint = focusJumperPoint;
         }
         else {
-            if(focusNode){
-                jumperList.push(new Jumper(focusNode));
-                focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push({x: focusNode.x, y: focusNode.y});
-                selectedNode = focusNode;
-            }
-            else if(focusJumperPoint){
-                jumperList.push(new Jumper(focusJumperPoint.jumper));
-                focusJumperPoint.jumper.connectedJumpers.push(jumperList[jumperList.length-1]);
-                jumperList[jumperList.length-1].anchorPoints.push({x: focusJumperPoint.x, y: focusJumperPoint.y});
-                selectedJumperPoint = focusJumperPoint;
-            }
-            else {
 
-            }
         }
     }
 }
@@ -521,6 +502,121 @@ function loadModules(){
     input.click();
 }
 
+function downloadSchematic(){
+    let schematic = {};
+    schematic.components = [];
+    for(let i=0;i<componentList.length;i++){
+        schematic.components.push([componentList[i].name, componentList[i].x, componentList[i].y]);
+        if(componentList[i].label){
+            schematic.components[schematic.components.length-1].push(componentList[i].label);
+        }
+    }
+    schematic.jumpers = [];
+    let k = 0;
+    for(let i=0;i<componentList.length;i++){
+        for(let j=0;j<componentList[i].inputs.length;j++){
+            componentList[i].inputs[j].nodeId = k;
+            k++;
+        }
+        for(let j=0;j<componentList[i].outputs.length;j++){
+            componentList[i].outputs[j].nodeId = k;
+            k++;
+        }
+    }
+    for(let i=0;i<jumperList.length;i++){
+        jumperList[i].jumperId = i;
+    }
+    for(let i=0;i<jumperList.length;i++){
+        let x = [];
+        x.push(jumperList[i].anchorPoints);
+
+        if(jumperList[i].origin instanceof Node)
+            x.push([0, jumperList[i].origin.nodeId]);
+        else x.push([1, jumperList[i].origin.jumperId]);
+
+        if(jumperList[i].end instanceof Node)
+            x.push([0, jumperList[i].end.nodeId]);
+        else x.push([1, jumperList[i].end.jumperId]);
+        
+        schematic.jumpers.push(x);
+    }
+    const jsonString = JSON.stringify(schematic); 
+    const blob = new Blob([jsonString], { type: "application/json" });
+
+    const downloadlink = document.createElement("a");
+    downloadlink.href = URL.createObjectURL(blob);
+    downloadlink.download = "schematic.json";
+    document.body.appendChild(downloadlink);
+    downloadlink.click();
+    document.body.removeChild(downloadlink);
+}
+
+function loadSchematic(){
+    let input = document.createElement("input");
+    input.type = "file";
+    input.addEventListener('change', function() {
+        var reader = new FileReader();
+        reader.addEventListener('load', function() {
+            var jsonData = JSON.parse(reader.result);
+            componentList = [];
+            for(let i=0;i<jsonData.components.length;i++){
+              for(let j=0;j<toolbar.toolList.length;j++){
+                  if(toolbar.toolList[j].name==jsonData.components[i][0]){
+                      let comp = Object.create(toolbar.toolList[j]);
+                      comp.construct(jsonData.components[i][1], jsonData.components[i][2]);
+                      componentList.push(comp);
+                      if(jsonData.components[i].length==4){
+                        comp.label = jsonData.components[i][3];
+                      }
+                  }
+              }
+            }
+
+            let nodes = [];
+            for(let i=0;i<componentList.length;i++){
+                for(let j=0;j<componentList[i].inputs.length;j++){
+                    nodes.push(componentList[i].inputs[j]);
+                }
+                for(let j=0;j<componentList[i].outputs.length;j++){
+                    nodes.push(componentList[i].outputs[j]);
+                }
+            }
+
+            jumperList = [];
+            for(let i=0;i<jsonData.jumpers.length;i++){
+                jumperList.push(new Jumper(null));
+            }
+
+            for(let i=0;i<jsonData.jumpers.length;i++){
+                
+                jumperList[i].anchorPoints = jsonData.jumpers[i][0];
+
+                if(jsonData.jumpers[i][1][0]==0){
+                    jumperList[i].origin = nodes[jsonData.jumpers[i][1][1]];
+                    nodes[jsonData.jumpers[i][1][1]].connectedJumpers.push(jumperList[i]);
+                }
+                else {
+                    jumperList[i].origin = jumperList[jsonData.jumpers[i][1][1]];
+                    jumperList[jsonData.jumpers[i][1][1]].connectedJumpers.push(jumperList[i]);
+                }
+
+                if(jsonData.jumpers[i][2][0]==0){
+                    jumperList[i].end = nodes[jsonData.jumpers[i][2][1]];
+                    nodes[jsonData.jumpers[i][2][1]].connectedJumpers.push(jumperList[i]);
+                }
+                else {
+                    jumperList[i].end = jumperList[jsonData.jumpers[i][2][1]];
+                    jumperList[jsonData.jumpers[i][2][1]].connectedJumpers.push(jumperList[i]);
+                }
+            }
+
+        });
+        reader.readAsText(this.files[0]);
+    });
+    input.click();
+    scheme_log = [];
+}
+
 function drawComponents(){
     if(mouseIsPressed && mouseButton==LEFT && selectedTool==del && !keyIsDown(17)){
         if(focusJumperPoint){
@@ -538,14 +634,13 @@ function drawComponents(){
                     focusComponents[0].inputs[i].connectedJumpers[j].del();
                 }
             }
-            for(let i=0;i<jumperList.length;i++){
-                if(focusComponents[0].outputs.indexOf(jumperList[i].origin)!=-1 || 
-                focusComponents[0].outputs.indexOf(jumperList[i].end)!=-1) {
-                    jumperList[i].del();
+            for(let i=0;i<focusComponents[0].outputs.length;i++){
+                for(let j=0;j<focusComponents[0].outputs[i].connectedJumpers.length;j++){
+                    focusComponents[0].outputs[i].connectedJumpers[j].del();
                 }
             }
+            scheme_log.push([3, [focusComponents[0]]]);
             componentList.splice(componentList.indexOf(focusComponents[0]), 1);  
-                
         }
     }
 
@@ -660,15 +755,15 @@ function drawJumpers(){
     beginShape(LINES);
     for(let i=0;i<jumperList.length;i++){
         for (let j = 1; j < jumperList[i].anchorPoints.length; j++) {
-            vertex(jumperList[i].anchorPoints[j-1].x, jumperList[i].anchorPoints[j-1].y);
-            vertex(jumperList[i].anchorPoints[j].x, jumperList[i].anchorPoints[j].y);
-            let a1 = (jumperList[i].anchorPoints[j].y-jumperList[i].anchorPoints[j-1].y);
-            let a2 = (jumperList[i].anchorPoints[j].x-jumperList[i].anchorPoints[j-1].x);
+            vertex(jumperList[i].anchorPoints[j-1][0], jumperList[i].anchorPoints[j-1][1]);
+            vertex(jumperList[i].anchorPoints[j][0], jumperList[i].anchorPoints[j][1]);
+            let a1 = (jumperList[i].anchorPoints[j][1]-jumperList[i].anchorPoints[j-1][1]);
+            let a2 = (jumperList[i].anchorPoints[j][0]-jumperList[i].anchorPoints[j-1][0]);
             if(abs(a2) > abs(a1)){
                 a1 = a1/a2;
-                let c = jumperList[i].anchorPoints[j-1].y - a1*jumperList[i].anchorPoints[j-1].x;
-                let x2 = max(jumperList[i].anchorPoints[j-1].x, jumperList[i].anchorPoints[j].x);
-                let x1 = min(jumperList[i].anchorPoints[j-1].x, jumperList[i].anchorPoints[j].x);
+                let c = jumperList[i].anchorPoints[j-1][1] - a1*jumperList[i].anchorPoints[j-1][0];
+                let x2 = max(jumperList[i].anchorPoints[j-1][0], jumperList[i].anchorPoints[j][0]);
+                let x1 = min(jumperList[i].anchorPoints[j-1][0], jumperList[i].anchorPoints[j][0]);
                 if (
                     pointer.x<x2 && pointer.x>x1 &&
                     ((pointer.y - a1*pointer.x - c)**2)/(1+a1*a1) < 16
@@ -681,9 +776,9 @@ function drawJumpers(){
             }
             else {
                 a2 = a2/a1;
-                let c = jumperList[i].anchorPoints[j-1].x - a2*jumperList[i].anchorPoints[j-1].y;
-                let y2 = max(jumperList[i].anchorPoints[j-1].y, jumperList[i].anchorPoints[j].y);
-                let y1 = min(jumperList[i].anchorPoints[j-1].y, jumperList[i].anchorPoints[j].y);
+                let c = jumperList[i].anchorPoints[j-1][0] - a2*jumperList[i].anchorPoints[j-1][1];
+                let y2 = max(jumperList[i].anchorPoints[j-1][1], jumperList[i].anchorPoints[j][1]);
+                let y1 = min(jumperList[i].anchorPoints[j-1][1], jumperList[i].anchorPoints[j][1]);
                 if (
                     pointer.y<y2 && pointer.y>y1 &&
                     ((pointer.x - a2*pointer.y - c)**2)/(1+a2*a2) < 16
@@ -698,8 +793,8 @@ function drawJumpers(){
     }
     
     if(selectedNode || selectedJumperPoint){
-        vertex(jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1].x, 
-               jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1].y);
+        vertex(jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1][0], 
+               jumperList[jumperList.length-1].anchorPoints[jumperList[jumperList.length-1].anchorPoints.length-1][1]);
         vertex(pointer.x, pointer.y);
     }
     endShape();
