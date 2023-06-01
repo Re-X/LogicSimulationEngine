@@ -69,10 +69,12 @@ const toolbar = {
         scale(0.75);
         focusTool = null;
         let ty = 30;
+        let init = document.getElementById("searchbar").value.toLowerCase();
         for(let i=0;i<this.toolList.length;i++){
+            if(init != "" && init.localeCompare(this.toolList[i].name.toLowerCase().slice(0, init.length))!=0) continue;
             push();
             if(this.toolList[i].componentHeaders){
-                if(UI.mouseInScreenRect(_x - 25, _y + (ty - 30)*0.75, _x + textWidth(this.toolList[i].name), _y + (ty + 30)*0.75)){
+                if(UI.mouseInScreenRect(_x - 25, _y + (ty - 30)*0.75, _x + textWidth(this.toolList[i].name), _y + (ty + 29)*0.75)){
                     scale(2);
                     text(this.toolList[i].name, -Math.min(20, textWidth(this.toolList[i].name)/2), ty/2);
                     focusTool = this.toolList[i];
@@ -83,7 +85,7 @@ const toolbar = {
                 }
             }
             else {
-                if(UI.mouseInScreenRect(_x - 30*0.75, _y + (ty - 30)*0.75, _x + 30*0.75, _y + (ty + 30)*0.75)) {
+                if(UI.mouseInScreenRect(_x - 30*0.75, _y + (ty - 30)*0.75, _x + 30*0.75, _y + (ty + 29)*0.75)) {
                     scale(1.25);
                     this.toolList[i].draw(0, ty/1.25);
                     text(this.toolList[i].name, (mouseX-_x)/(1.25*0.75)+20, (mouseY-_y)/(0.75*1.25)+10);
@@ -99,6 +101,7 @@ const toolbar = {
 }
 
 function mouseWheel(event){
+    if(topbar) return;
     if(toolbar.mouseOver()){
         let s = (event.deltaY < 0) ? 5 : -5;
         if(toolbar.y + s < UI.canvasHeight-60 && toolbar.y+60*0.75*toolbar.toolList.length + s>60) toolbar.y += s;
@@ -121,6 +124,7 @@ function mouseDragged(){
 }
 
 function mousePressed(){
+    if(topbar) return;
     //remove component-label
     if(selectedComponent){
         let input = document.getElementById("component-label");
@@ -159,8 +163,10 @@ function mousePressed(){
             if(selectedTool==del) document.getElementById('defaultCanvas0').style.cursor = 'none';
             else document.getElementById('defaultCanvas0').style.cursor = 'unset';
         }
-        state[0] = 0; 
-        document.getElementsByClassName("sim")[0].innerHTML = "Simulate";
+        if(state[0]){
+            state[0] = 0; 
+            document.getElementsByClassName("simulate")[0].innerHTML = "Simulate";
+        }
     }
 
     if(state[0] || focusTool!=null) return;
@@ -203,7 +209,7 @@ function mousePressed(){
 }
 
 function mouseReleased(){
-    if(state[0]) return;
+    if(state[0] || topbar) return;
 
     if(mouseButton==LEFT && selectedTool==del && !keyIsDown(17)){
         if(focusJumperPointList.length){
@@ -369,6 +375,7 @@ function keyPressed(){
 }
 
 function keyReleased(){
+    if(topbar) return;
     if(selectedTool!=del) document.getElementById('defaultCanvas0').style.cursor = 'unset';
     else document.getElementById('defaultCanvas0').style.cursor = 'none';
 }
@@ -384,12 +391,12 @@ let Module;
 function simulate(){
     if(state[0]==0) {
         state[0] = 1;
-        document.getElementsByClassName("sim")[0].innerHTML = "Simulating";
+        document.getElementsByClassName("simulate")[0].innerHTML = "Simulating";
     }
     else {
         //compute.terminate();
         state[0] = 0;
-        document.getElementsByClassName("sim")[0].innerHTML = "Simulate";
+        document.getElementsByClassName("simulate")[0].innerHTML = "Simulate";
         return;
     }
 
@@ -411,14 +418,15 @@ function simulate(){
 }
 
 function createSubmodule(){
-    if(document.getElementById("label").value=="") return;
+    if(document.getElementById("title").value=="") return;
 
     let subModule = ParseNetwork(componentList, jumperList);
 
-    subModule.name = document.getElementById("label").value;
+    subModule.name = document.getElementById("title").value;
     let k = Math.max(subModule.innerInputs.length, subModule.innerOutputs.length);
-    if(k%2) subModule.bounds = { x1: -textWidth(subModule.name)/2-20, y1: -(k-1)*5-20, x2: textWidth(subModule.name)/2+20, y2: (k-1)*5+20};
-    else subModule.bounds = { x1: -textWidth(subModule.name)/2-20, y1: -k*5-10, x2: textWidth(subModule.name)/2+20, y2: k*5+20};
+    if(k==0) { alert("No IO pins defined."); return; }
+    if(k%2) subModule.bounds = { x1: -textWidth(subModule.name)/2-20, y1: -(k-1)*5-30, x2: textWidth(subModule.name)/2+20, y2: k*5+5};
+    else subModule.bounds = { x1: -textWidth(subModule.name)/2-20, y1: -k*5-30, x2: textWidth(subModule.name)/2+20, y2: k*5};
     //console.log(subModule);
     Object.setPrototypeOf(subModule, SubModule.prototype);
     for(let i=0;i<toolbar.toolList.length;i++){
@@ -428,12 +436,12 @@ function createSubmodule(){
 }
 
 function downloadModule(){
-    let name = document.getElementById("label").value;
+    let name = document.getElementById("title").value;
     let subModule = null;
     for(let i=0;i<toolbar.toolList.length;i++){
         if(toolbar.toolList[i].name==name) { subModule = toolbar.toolList[i]; break; }
     }
-    if(subModule==null) return;
+    if(subModule==null) { alert("Module doesn't exist."); return; }
 
     const jsonString = JSON.stringify([subModule]);
     const blob = new Blob([jsonString], { type: "application/json" });
@@ -463,6 +471,7 @@ function downloadModules(){
 function loadModules(){
     let input = document.createElement("input");
     input.type = "file";
+    input.accept = ".json";
     input.addEventListener('change', function() {
         var reader = new FileReader();
         reader.addEventListener('load', function() {
@@ -521,7 +530,7 @@ function downloadSchematic(){
 
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
-    downloadlink.download = "schematic.json";
+    downloadlink.download = "schematic.scheme";
     document.body.appendChild(downloadlink);
     downloadlink.click();
     document.body.removeChild(downloadlink);
@@ -530,6 +539,7 @@ function downloadSchematic(){
 function loadSchematic(){
     let input = document.createElement("input");
     input.type = "file";
+    input.accept = ".scheme";
     input.addEventListener('change', function() {
         var reader = new FileReader();
         reader.addEventListener('load', function() {
@@ -606,7 +616,7 @@ function drawComponents(){
         }
     }
 
-    if(mouseIsPressed && mouseButton==LEFT && selectedTool==del && !keyIsDown(17) && !state[0]){
+    if(mouseIsPressed && mouseButton==LEFT && selectedTool==del && !keyIsDown(17) && !state[0] && !topbar){
         for(let i=0;i<jumperList.length;i++){
             jumperList[i].isTravelled = false;
         }

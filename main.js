@@ -2,9 +2,11 @@
 let componentList = [];
 let jumperList = [];
 let state, stateSab;
+let topbar;
 
 function setup() {
-    UI.setup(windowWidth-50, windowHeight-100);
+    topbar = false;
+    UI.setup(windowWidth-20, windowHeight-70);
 
     document.addEventListener('keydown', (event)=>{
         if(event.ctrlKey && event.key=='z'){
@@ -16,7 +18,8 @@ function setup() {
     canvas.addEventListener("contextmenu", (event) => {
         event.preventDefault();
     });
-
+    canvas.addEventListener("mouseleave", ()=>{ topbar = true; });
+    canvas.addEventListener("mouseenter", ()=>{ topbar = false; });
     toolbar.x = 60; 
     toolbar.y = UI.canvasHeight/2 - 200;
     
@@ -54,7 +57,7 @@ function draw() {
         }
     }
 
-    if(focusComponents.length) {
+    if(focusComponents.length && !topbar) {
         for(let i=0;i<focusComponents.length;i++){
             push();
             translate(focusComponents[i].x, focusComponents[i].y);
@@ -81,7 +84,7 @@ function draw() {
         else selectedTool.draw(gridPointer.x, gridPointer.y);
     }
 
-    if(mouseIsPressed && mouseButton==LEFT && !keyIsDown(17) && !state[0]){
+    if(mouseIsPressed && mouseButton==LEFT && !keyIsDown(17) && !state[0] && !topbar){
         noFill();
         rectMode(CORNERS);
         rect(selectionRect.x1, selectionRect.y1, pointer.x, pointer.y);
@@ -91,8 +94,8 @@ function draw() {
     }
 
     pop();
-    stroke(50, 200, 100);
-    //fill(50, 200, 100);
+    stroke(50, 120, 100);
+    fill(50, 120, 100);
     toolbar.draw();
 }
 

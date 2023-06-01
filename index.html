@@ -6,6 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
     <script src="coi-serviceworker.js"></script>
     <script src="classes.js"></script>
@@ -19,75 +20,134 @@
             color: rgb(41, 41, 41);
             text-align: center;
         }
-        .topbar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 50px;
-        }
-        .butt {
-            height: 30px;
-            background-color: transparent;
-            font-family: 'Montserrat', sans-serif;
-            border-width: 1px;
-            flex-shrink: 0;
-            position: relative;
-            left: -200px;
-            font-size: 0.8em;
-            transition: all 0.1s ease-in-out;
-        }
-        .butt:hover {
-            font-size: 0.9em;
-        }
-        .butt:active {
-            height: 27px;
-            font-size: 0.6em;
-            background-color: transparent;
-            color: rgb(41, 41, 41);
-        }
-        .sim {
-            height: 30px;
-            background-color: transparent;
-            font-family: 'Montserrat', sans-serif;
-            border-width: 1px;
-            flex-shrink: 0;
-            position: relative;
-            left: -10px;
-            font-size: 0.8em;
-            transition: all 0.1s ease-in-out;
-        }
-        .sim:hover {
-            font-size: 0.9em;
-        }
-        .sim:active {
-            height: 27px;
-            font-size: 0.6em;
-            background-color: transparent;
-            color: rgb(41, 41, 41);
-        }
-        #label{
-            position: relative;
-            left: -250px;
-        }
-        h1 {
-            position: relative;
-        }
         
         canvas {
+            display: block;
             user-select: none;
+            margin: auto;
+        }
+        .topbar {
+            display: flex;
+            border: 1px solid rgb(41, 41, 41);
+            align-items: center;
+            padding-left: 1%;
+            height: 50px;
+        }
+
+        .simulate, .create {
+            background-color: white;
+            font-family: 'Montserrat', sans-serif;
+            color: rgb(41, 41, 41);
+            border: none;
+            text-align: center;
+            font-size: 1em;
+            margin-left: 1%;
+            height: 50%;
+            transition: all 0.05s ease-in-out;
+        }
+        .simulate:active, .create:active {
+            font-size: 0.9em;
+        }
+        .simulate:hover, .create:hover {
+            border: 1px solid rgb(41, 41, 41);
+        }
+
+        .file {
+            display: inline-block;
+        }
+        .file-button {
+            background-color: white;
+            font-family: 'Montserrat', sans-serif;
+            color: rgb(41, 41, 41);
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            height: 100%;
+        }
+        .file-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+        }
+        .file-content button {
+            display: block;
+            background-color: white;
+            font-family: 'Montserrat', sans-serif;
+            color: rgb(41, 41, 41);
+            border: none;
+            text-align: left;
+            font-size: 14px;
+            padding: 5px 10px;
+            width: 100%;
+        }
+
+        #title {
+            color: rgb(41, 41, 41);
+            margin: 0;
+            margin-top: 3px;
+            margin-bottom: 3px;
+            position: relative;
+            left: 10%;
+            width: 50%;
+            font-size: 30px;
+            border: none;
+            background: none;
+        }
+        #title:focus { outline: none !important; }
+
+        .file:hover {
+            border: 1px solid rgb(41, 41, 41);
+        }
+
+        .file:hover .file-content {
+            display: block;
+            border: 1px solid rgb(41, 41, 41);
+        }
+
+        .file-content button:hover {
+            background-color: rgb(230, 230, 230);
+        }
+
+        .search {
+            position: absolute;
+            left: 40px;
+            top: 100px;
+        }
+        .search button {
+            font-size: 1.25rem;
+            background: none;
+            font-family: 'Montserrat', sans-serif;
+            color: rgb(50, 120, 100);
+            border: none;
+            text-align: center;
+        }
+        #searchbar {
+            color: rgb(50, 120, 100);
+            border: 1px solid rgb(50, 120, 100);
+            outline: none !important;
         }
     </style>
 </head>
 
 <body>
+    <div class="search">
+        <input type="text" id="searchbar"></input>
+        <button id="download"><i class="fa fa-search"></i></button>
+    </div>
     <div class="topbar">
-        <input type="text" id="label"></input>
-        <button class="butt" onclick="createSubmodule()">Create</button>
-        <button class="butt" onclick="downloadModule()">Save Module</button>
-        <button class="butt" onclick="downloadModules()">Save</button>
-        <button class="butt" onclick="loadModules()">Load</button>
-        <button class="sim" onclick="simulate()">Simulate</button>
-        <h1>Testbench</h1>
+        <div class="file">
+            <button class="file-button">File</button>
+            <div class="file-content">
+                <button class="save-scheme" onclick="downloadSchematic()">Save Schematic</button>
+                <button class="open-scheme" onclick="loadSchematic()">Open Schematic</button>
+                <button class="load-mods" onclick="loadModules()">Load Modules</button>
+                <button class="save-mod" onclick="downloadModule()">Export Current Module</button>
+                <button class="save-mods" onclick="downloadModules()">Export All Used Modules</button>
+            </div>
+        </div>
+        <button class="simulate" onclick="simulate()">Simulate</button>
+        <button class="create" onclick="createSubmodule()">Create</button>
+        <input type="text" spellcheck="false" id="title" value="Testbench"></input>
     </div>
 </body>
 
