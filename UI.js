@@ -70,7 +70,7 @@ const toolbar = {
         focusTool = null;
         let ty = 30;
         for(let i=0;i<this.toolList.length;i++){
-            if(componentQuery != "" && componentQuery.localeCompare(this.toolList[i].name.toLowerCase().slice(0, componentQuery.length))!=0) continue;
+            if(componentQuery != "" && componentQuery != this.toolList[i].name.toLowerCase().slice(0, componentQuery.length)) continue;
             push();
             if(this.toolList[i].componentHeaders){
                 if(UI.mouseInScreenRect(_x - 25, _y + (ty - 30)*0.75, _x + textWidth(this.toolList[i].name), _y + (ty + 29)*0.75)){
@@ -603,11 +603,15 @@ function loadSchematic(){
 }
 
 async function loadFromURL(url){
-    fetch(url).then((data)=>{
-        var jsonData = data.json;
+    fetch(url).then(data=>data.json()).then((jsonData)=>{
+        let exists = false;
         for(let i=0;i<jsonData.length;i++){
-          Object.setPrototypeOf(jsonData[i], SubModule.prototype);
-          toolbar.toolList.push(jsonData[i]);
+            for(let j=0;j<toolbar.toolList.length;j++){
+                if(toolbar.toolList[j].name == jsonData[i].name) {exists = true; break};
+            }
+            if(exists) continue;
+            Object.setPrototypeOf(jsonData[i], SubModule.prototype);
+            toolbar.toolList.push(jsonData[i]);
         }
     });
 }
