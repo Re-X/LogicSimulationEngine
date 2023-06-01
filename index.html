@@ -126,12 +126,21 @@
             border: 1px solid rgb(50, 120, 100);
             outline: none !important;
         }
+        .load-mods button { display: inline-block; }
+        .load-mods-content{
+            position: absolute;
+            display: none;
+            border: 1px solid rgb(41, 41, 41);
+        }
+        .load-mods:hover .load-mods-content{
+            display: inline-block;
+        }
     </style>
 </head>
 
 <body>
     <div class="search">
-        <input type="text" id="searchbar"></input>
+        <input type="text" id="searchbar" oninput="(()=>{componentQuery = this.value.toLowerCase();})()"></input>
         <button id="download"><i class="fa fa-search"></i></button>
     </div>
     <div class="topbar">
@@ -140,9 +149,15 @@
             <div class="file-content">
                 <button class="save-scheme" onclick="downloadSchematic()">Save Schematic</button>
                 <button class="open-scheme" onclick="loadSchematic()">Open Schematic</button>
-                <button class="load-mods" onclick="loadModules()">Load Modules</button>
-                <button class="save-mod" onclick="downloadModule()">Export Current Module</button>
-                <button class="save-mods" onclick="downloadModules()">Export All Used Modules</button>
+                <div class="load-mods">
+                    <button>Import Modules</button>
+                    <div class="load-mods-content">
+                        <button>Memory&nbspElements</button>
+                        <button onclick="loadModules()">Upload</button>
+                    </div>
+                </div>
+                <button onclick="downloadModule()">Export Current Module</button>
+                <button onclick="downloadModules()">Export All Used Modules</button>
             </div>
         </div>
         <button class="simulate" onclick="simulate()">Simulate</button>

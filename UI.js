@@ -55,7 +55,7 @@ let selectedJumperPoint = null;
 let selectedComponent = null;
 
 let selectionRect = { x1: 0, y1: 0, x2: 0, y2: 0, selectedNodes: [] };
-
+let componentQuery = "";
 const toolbar = {
     toolList: [inNode, outNode, not, or, nor, xor, and, nand, buffer, del],
     x: 0, y: 0,
@@ -69,9 +69,8 @@ const toolbar = {
         scale(0.75);
         focusTool = null;
         let ty = 30;
-        let init = document.getElementById("searchbar").value.toLowerCase();
         for(let i=0;i<this.toolList.length;i++){
-            if(init != "" && init.localeCompare(this.toolList[i].name.toLowerCase().slice(0, init.length))!=0) continue;
+            if(componentQuery != "" && componentQuery.localeCompare(this.toolList[i].name.toLowerCase().slice(0, componentQuery.length))!=0) continue;
             push();
             if(this.toolList[i].componentHeaders){
                 if(UI.mouseInScreenRect(_x - 25, _y + (ty - 30)*0.75, _x + textWidth(this.toolList[i].name), _y + (ty + 29)*0.75)){
@@ -449,9 +448,7 @@ function downloadModule(){
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
     downloadlink.download = subModule.name+".json";
-    document.body.appendChild(downloadlink);
     downloadlink.click();
-    document.body.removeChild(downloadlink);
 }
 function downloadModules(){
     let modules = [];
@@ -464,25 +461,29 @@ function downloadModules(){
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
     downloadlink.download = "modules.json";
-    document.body.appendChild(downloadlink);
     downloadlink.click();
-    document.body.removeChild(downloadlink);
 }
 function loadModules(){
     let input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
-    input.addEventListener('change', function() {
+    input.multiple = "multiple";
+    input.addEventListener('change', async function() {
         var reader = new FileReader();
-        reader.addEventListener('load', function() {
-          var jsonData = JSON.parse(reader.result);
+        for(let i=0;i<this.files.length;i++) { 
+            reader.readAsText(this.files[i]);
+            const result = await new Promise((resolve, reject) => {
+                reader.onload = function(event) {
+                    resolve(reader.result)
+                }
+            });
+            const jsonData = JSON.parse(result);
           
-          for(let i=0;i<jsonData.length;i++){
-            Object.setPrototypeOf(jsonData[i], SubModule.prototype);
-            toolbar.toolList.push(jsonData[i]);
-          }
-        });
-        reader.readAsText(this.files[0]);
+            for(let j=0;j<jsonData.length;j++){
+              Object.setPrototypeOf(jsonData[j], SubModule.prototype);
+              toolbar.toolList.push(jsonData[j]);
+            }
+        }
     });
     input.click();
 }
@@ -531,9 +532,7 @@ function downloadSchematic(){
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
     downloadlink.download = "schematic.scheme";
-    document.body.appendChild(downloadlink);
     downloadlink.click();
-    document.body.removeChild(downloadlink);
 }
 
 function loadSchematic(){
@@ -601,6 +600,16 @@ function loadSchematic(){
     });
     input.click();
     scheme_log = [];
+}
+
+async function loadFromURL(url){
+    fetch(url).then((data)=>{
+        var jsonData = data.json;
+        for(let i=0;i<jsonData.length;i++){
+          Object.setPrototypeOf(jsonData[i], SubModule.prototype);
+          toolbar.toolList.push(jsonData[i]);
+        }
+    });
 }
 
 function drawComponents(){

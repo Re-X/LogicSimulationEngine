@@ -7,7 +7,7 @@ let topbar;
 function setup() {
     topbar = false;
     UI.setup(windowWidth-20, windowHeight-70);
-
+    pixelDensity(1);
     document.addEventListener('keydown', (event)=>{
         if(event.ctrlKey && event.key=='z'){
             undo();
