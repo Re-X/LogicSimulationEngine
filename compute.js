@@ -3,6 +3,17 @@ let state, activeValues;
 let Module;
 let userInput;
 let execQueue;
+let begin, end;
+
+function push(queue, obj){
+    queue[end] = obj;
+    if(begin==-1) begin=0;
+    end = (end+1)%queue.length;
+}
+function pop(queue){
+    //queue[begin] = null;
+    begin = (begin+1)%queue.length;
+}
 
 onmessage = (obj) => {
     state = new Uint8Array(obj.data[0]);
@@ -10,7 +21,9 @@ onmessage = (obj) => {
     Module = obj.data[2];
     Module.activeValues = new Int8Array(obj.data[3]);
     Module.activeComponents = new Array(Module.activeValues.length);
-    execQueue = [];
+    execQueue = new Array(1000000);
+    //for(let i=0;i<execQueue.length;i++) execQueue[i] = -1;
+    begin = -1; end = 0;
     
     InitializeModule(Module);
 
@@ -21,9 +34,9 @@ onmessage = (obj) => {
     }
 
     while(state[0]==1){
-        if(execQueue.length){
-            executeComponent(execQueue[0]);
-            execQueue.splice(0, 1);
+        if(begin!=-1 && begin!=end){
+            executeComponent(execQueue[begin]);
+            pop(execQueue);
         }
         if(userInput[0]!=-1){
             setActiveValue(userInput[0], userInput[1], Module);
@@ -34,17 +47,20 @@ onmessage = (obj) => {
 };
 
 function InitializeModule(Module){
-    for(let i=0;i<Module.componentHeaders.length;i++){
+    for(let i=0;i<Module.componentHeaders.length;++i){
         Module.componentHeaders[i].parent = Module;
         if(Module.componentHeaders[i].componentHeaders){
             Module.componentHeaders[i].activeValues = new Int8Array(Module.componentHeaders[i].componentGroups.length);
-            for(let j=0;j<Module.componentHeaders[i].componentGroups.length;j++){
+            for(let j=0;j<Module.componentHeaders[i].componentGroups.length;++j){
                 Module.componentHeaders[i].activeValues[j] = -1;
             }
             Module.componentHeaders[i].activeComponents = new Array(Module.componentHeaders[i].componentGroups.length);
+            for(let j=0;j<Module.componentHeaders[i].activeComponents.length;++j){
+                Module.componentHeaders[i].activeComponents[i] = -1;
+            }
             InitializeModule(Module.componentHeaders[i]);
         }
-        //execQueue.push(Module.componentHeaders[i]);
+        //push(execQueue, Module.componentHeaders[i]);
     }
 }
 
@@ -54,9 +70,12 @@ function setActiveValue(id, value, Module, component){
     let componentGroups = Module.componentGroups;
     let activeComponents = Module.activeComponents;
     
-    if(value==-1 && (activeComponents[id] != component || component==undefined)){
+    //For finite capacitance lines
+    /*if(value==-1 && (activeComponents[id] != component || component==undefined)){
         return;
-    }
+    }*/
+    //For infinite capacitance lines
+    if(value==-1) return;
 
     if(activeValues[id]==value) {
         return;
@@ -66,8 +85,8 @@ function setActiveValue(id, value, Module, component){
     activeValues[id] = value;
 
     for(let i=0;i<componentGroups[id].length;i++){
-        if(componentHeaders[componentGroups[id][i]] != execQueue[0]) 
-            execQueue.push(componentHeaders[componentGroups[id][i]]);
+        if(componentHeaders[componentGroups[id][i]] != execQueue[begin]) 
+            push(execQueue, componentHeaders[componentGroups[id][i]]);
     }
 }
 
