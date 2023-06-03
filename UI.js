@@ -531,7 +531,7 @@ function downloadSchematic(){
 
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
-    downloadlink.download = "schematic.scheme";
+    downloadlink.download = document.getElementById("title").value;
     downloadlink.click();
 }
 
