@@ -57,7 +57,7 @@ let selectedComponent = null;
 let selectionRect = { x1: 0, y1: 0, x2: 0, y2: 0, selectedNodes: [] };
 let componentQuery = "";
 const toolbar = {
-    toolList: [inNode, outNode, not, or, nor, xor, and, nand, buffer, del],
+    toolList: [inNode, outNode, not, or, nor, xor, and, nand, buffer, del, disp8],
     x: 0, y: 0,
     mouseOver(){
         return mouseX>=this.x-22.5 && mouseX<=this.x+22.5;

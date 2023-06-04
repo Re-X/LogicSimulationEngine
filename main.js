@@ -36,10 +36,12 @@ function draw() {
     gridPointer.x = int(pointer.x/10)*10;
     gridPointer.y = int(pointer.y/10)*10;
 
+    rectMode(CORNERS);
+    
     push();
     UI.update();
     stroke(40);
-    
+
     drawComponents();
     drawJumpers();
     
@@ -86,7 +88,6 @@ function draw() {
 
     if(mouseIsPressed && mouseButton==LEFT && !keyIsDown(17) && !state[0] && !topbar){
         noFill();
-        rectMode(CORNERS);
         rect(selectionRect.x1, selectionRect.y1, pointer.x, pointer.y);
         for(let i=0;i<selectionRect.selectedNodes.length;i++){
             circle(selectionRect.selectedNodes[i].x, selectionRect.selectedNodes[i].y, 10);

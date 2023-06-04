@@ -302,3 +302,36 @@ const del = {
     pop();
   }
 };
+
+const disp8 = {
+  name: "8-bit display",
+  bounds: { x1: -32, y1: -30, x2: 32, y2: 30 },
+  construct(x, y) {
+    this.x = x;
+    this.y = y;
+    this.inputs = []; this.outputs = [];
+    for(let i=0;i<8;i++) this.inputs.push( new Node(x + 2.5 + 5*(i-4), y-33));
+  }, 
+  draw(_x = this.x, _y = this.y) {
+    let value = "FF";
+    if(state[0] && this.inputs){
+      value = 0;
+      for(let i=7;i>=0;i--) {
+        value = 2*value + Math.abs(activeValues[this.inputs[i].groupId]);
+      }
+      value = value.toString(16).toUpperCase();
+      if(value.length==1) value = "0"+value;
+    }
+    push();
+    translate(_x, _y);
+    strokeWeight(1.5);
+    for(let i=0;i<8;i++) line(2.5 + 5*(i-4), -33, 2.5 + 5*(i-4), 0);
+    fill(250);
+    rect(-30, -25, 30, 25);
+    strokeWeight(3);
+    textSize(40);
+    textFont("Roboto Mono");
+    text(value, -24.25, 12);
+    pop();
+  }
+}
