@@ -194,6 +194,7 @@ function mousePressed(){
             comp.construct(gridPointer.x, gridPointer.y);
             componentList.push(comp);
             scheme_log.push([2, [componentList.length-1]]);
+            focusComponents.push(comp);
             //selectedTool = null;
         }
         else {
@@ -622,10 +623,11 @@ function drawComponents(){
     selectionRect.selectedNodes = [];
 
     for(let i=0;i<componentList.length;i++){
-        if((selectedTool==null || selectedTool==del) &&
-            UI.mouseInWorldRect(componentList[i].x+componentList[i].bounds.x1, componentList[i].y+componentList[i].bounds.y1, 
-            componentList[i].x+componentList[i].bounds.x2, componentList[i].y+componentList[i].bounds.y2)){
-            focusComponents = [componentList[i]];
+        if(UI.mouseInWorldRect(componentList[i].x+componentList[i].bounds.x1, componentList[i].y+componentList[i].bounds.y1, 
+            componentList[i].x+componentList[i].bounds.x2, componentList[i].y+componentList[i].bounds.y2)
+            && selectedNodeList.length==0 && !keyIsDown(16)){
+            focusComponents.push(componentList[i]);
+            break;
         }
     }
 
@@ -655,12 +657,6 @@ function drawComponents(){
     }
 
     for(let i=0;i<componentList.length;i++){
-        if((selectedTool==null || selectedTool==del) &&
-            UI.mouseInWorldRect(componentList[i].x+componentList[i].bounds.x1, componentList[i].y+componentList[i].bounds.y1, 
-            componentList[i].x+componentList[i].bounds.x2, componentList[i].y+componentList[i].bounds.y2)){
-            focusComponents = [componentList[i]];
-        }
-        
         if(mouseIsPressed && mouseButton==LEFT && !state[0]){
             let x = componentList[i].x;
             let y = componentList[i].y;

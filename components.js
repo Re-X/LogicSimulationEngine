@@ -24,7 +24,7 @@ const or = {
     construct(x, y) {
       this.x = x;
       this.y = y;
-      this.inputs = [new Node(x - 24, y - 9), new Node(x - 24, y + 9)];
+      this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 36, y, 3)];
     },
     draw(_x=this.x, _y=this.y) {
@@ -47,8 +47,8 @@ const or = {
       curveVertex(27, 0);
       curveVertex(27, 0);
       endShape();
-      line(-24, -9, -12, -9);
-      line(-24, 9, -12, 9);
+      line(-24, -10, -13, -10);
+      line(-24, 10, -13, 10);
       line(27, 0, 36, 0);
       pop();
     },
@@ -62,7 +62,7 @@ const nor = {
     construct(x, y) {
       this.x = x;
       this.y = y;
-      this.inputs = [new Node(x - 24, y - 9), new Node(x - 24, y + 9)];
+      this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 42, y, 3)];
     },
     draw(_x=this.x, _y=this.y) {
@@ -85,8 +85,8 @@ const nor = {
       curveVertex(27, 0);
       curveVertex(27, 0);
       endShape();
-      line(-24, -9, -12, -9);
-      line(-24, 9, -12, 9);
+      line(-24, -10, -13, -10);
+      line(-24, 10, -13, 10);
       line(27, 0, 42, 0);
       circle(30, 0, 9);
       pop();
@@ -97,11 +97,11 @@ const nor = {
 }
 const xor = {
     name: "XOR",
-    bounds: { x1: -25, y1: -20, x2: 30, y2: 20 },
+    bounds: { x1: -21, y1: -20, x2: 30, y2: 20 },
     construct(x, y) {
       this.x = x;
       this.y = y;
-      this.inputs = [new Node(x - 30, y - 9), new Node(x - 30, y + 9)];
+      this.inputs = [new Node(x - 27, y - 10), new Node(x - 27, y + 10)];
       this.outputs = [new Node(x + 36, y, 3)];
     },
     draw(_x = this.x, _y = this.y) {
@@ -110,13 +110,13 @@ const xor = {
       strokeWeight(1.5);
       noFill();
       beginShape();
-      curveVertex(-7.5*3, -12);
-      curveVertex(-7.5*3, -15);
-      curveVertex(-5.5*3, -9);
-      curveVertex(-4.9*3, 0);
-      curveVertex(-5.5*3, 9);
-      curveVertex(-7.5*3, 15);
-      curveVertex(-7.5*3, 12);
+      curveVertex(-6*3, -12);
+      curveVertex(-6*3, -15);
+      curveVertex(-4.5*3, -9);
+      curveVertex(-3.9*3, 0);
+      curveVertex(-4.5*3, 9);
+      curveVertex(-6*3, 15);
+      curveVertex(-6*3, 12);
       endShape();
       fill(250);
       beginShape();
@@ -124,18 +124,18 @@ const xor = {
       curveVertex(27, 0);
       curveVertex(15, -9);
       curveVertex(0, -15);
-      curveVertex(-15, -15);
-      curveVertex(-12, -9);
-      curveVertex(-3.55*3, 0);
-      curveVertex(-12, 9);
-      curveVertex(-15, 15);
+      curveVertex(-12, -15);
+      curveVertex(-9, -9);
+      curveVertex(-2.55*3, 0);
+      curveVertex(-9, 9);
+      curveVertex(-12, 15);
       curveVertex(0, 15);
       curveVertex(15, 9);
       curveVertex(27, 0);
       curveVertex(27, 0);
       endShape();
-      line(-30, -9, -5.5*3, -9);
-      line(-30, 9, -5.5*3, 9);
+      line(-27, -10, -15, -10);
+      line(-27, 10, -15, 10);
       line(27, 0, 36, 0);
       pop();
     },
@@ -150,7 +150,7 @@ const and = {
     construct(x, y) {
       this.x = x;
       this.y = y;
-      this.inputs = [new Node(x - 24, y - 9), new Node(x - 24, y + 9)];
+      this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 30, y, 3)];
     },
     draw(_x = this.x, _y = this.y) {
@@ -168,8 +168,8 @@ const and = {
       curveVertex(-18, 12);
       endShape();
       line(-15, -15, -15, 15);
-      line(-24, -9, -15, -9);
-      line(-24, 9, -15, 9);
+      line(-24, -10, -15, -10);
+      line(-24, 10, -15, 10);
       line(21, 0, 30, 0);
       pop();
     },
@@ -184,7 +184,7 @@ const nand = {
     construct(x, y) {
       this.x = x;
       this.y = y;
-      this.inputs = [new Node(x - 24, y - 9), new Node(x - 24, y + 9)];
+      this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 38, y, 3)];
     },
     draw(_x = this.x, _y = this.y) {
@@ -202,8 +202,8 @@ const nand = {
       curveVertex(-18, 12);
       endShape();
       line(-15, -15, -15, 15);
-      line(-24, -9, -15, -9);
-      line(-24, 9, -15, 9);
+      line(-24, -10, -15, -10);
+      line(-24, 10, -15, 10);
       line(21, 0, 38, 0);
       circle(8.5*3, 0, 9);
       pop();
@@ -215,7 +215,7 @@ const nand = {
   
 const inNode = {
     name: "Input Node",
-    bounds: { x1: -28, y1: -20, x2: 15, y2: 20 },
+    bounds: { x1: -28, y1: -13, x2: 15, y2: 13 },
     outputs: [{ value: 0}],
     construct(x, y) {
       this.x = x;
@@ -247,7 +247,7 @@ const inNode = {
 
 const outNode = {
     name: "Output Node",
-    bounds: { x1: -15, y1: -20, x2: 28, y2: 20 },
+    bounds: { x1: -15, y1: -13, x2: 28, y2: 13 },
     construct(x, y) {
       this.x = x;
       this.y = y;

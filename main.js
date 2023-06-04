@@ -11,6 +11,8 @@ function setup() {
     document.addEventListener('keydown', (event)=>{
         if(event.ctrlKey && event.key=='z'){
             undo();
+            event.preventDefault();
+            return;
         }
     });
 
@@ -37,7 +39,7 @@ function draw() {
     gridPointer.y = int(pointer.y/10)*10;
 
     rectMode(CORNERS);
-    
+
     push();
     UI.update();
     stroke(40);
@@ -69,19 +71,32 @@ function draw() {
                 focusComponents[i].bounds.x2, focusComponents[i].bounds.y2);
             pop();
         }
-        if(focusComponents[focusComponents.length-1].label){
+        let lcomp = focusComponents[focusComponents.length-1];
+        if(lcomp.label){
             push();
             rectMode(CORNERS);
             fill(250);
-            rect(pointer.x, pointer.y, pointer.x+textWidth(focusComponents[focusComponents.length-1].label)+10, pointer.y-20);
+            rect(pointer.x, pointer.y, pointer.x+textWidth(lcomp.label)+10, pointer.y-20);
             noFill();
-            text(focusComponents[focusComponents.length-1].label, pointer.x+5, pointer.y-5);
+            text(lcomp.label, pointer.x+5, pointer.y-5);
             pop();
+        }
+        if(selectedTool!=null && selectedTool!=del && lcomp.name==selectedTool.name){
+            gridPointer.x = lcomp.x;
+            gridPointer.y = lcomp.y + (lcomp.bounds.y2-lcomp.bounds.y1);
+            for(let i=0;i<componentList.length;i++){
+                if((componentList[i].x+componentList[i].bounds.x1<=gridPointer.x && gridPointer.x<=componentList[i].x+componentList[i].bounds.x2 && 
+                    componentList[i].y+componentList[i].bounds.y1<=gridPointer.y && gridPointer.y<=componentList[i].y+componentList[i].bounds.y2)) {
+                    lcomp = componentList[i];
+                    gridPointer.y = lcomp.y + (lcomp.bounds.y2-lcomp.bounds.y1);
+                }
+            }
         }
     }
 
     stroke(40);
     if(selectedTool!=null) {
+        stroke(50, 120, 100);
         if(selectedTool==del) selectedTool.draw(pointer.x, pointer.y);
         else selectedTool.draw(gridPointer.x, gridPointer.y);
     }

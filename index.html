@@ -159,13 +159,15 @@
                         <button onclick="loadModules()">Upload</button>
                     </div>
                 </div>
-                <button onclick="downloadModule()">Export Current Module</button>
+                <button id="downloadMod" onclick="downloadModule()">Export 'Testbench'</button>
                 <button onclick="downloadModules()">Export All Modules</button>
             </div>
         </div>
         <button class="simulate" onclick="simulate()">Simulate</button>
         <button class="create" onclick="createSubmodule()">Create</button>
-        <input type="text" spellcheck="false" id="title" value="Testbench"></input>
+        <input type="text" spellcheck="false" id="title" value="Testbench" oninput="((e)=>{
+            document.getElementById('downloadMod').innerHTML = 'Export \'' + this.value + '\''; 
+        })()"></input>
     </div>
 </body>
 
