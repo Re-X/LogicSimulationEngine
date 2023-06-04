@@ -65,7 +65,6 @@ function draw() {
         for(let i=0;i<focusComponents.length;i++){
             push();
             translate(focusComponents[i].x, focusComponents[i].y);
-            rectMode(CORNERS);
             noFill();
             rect(focusComponents[i].bounds.x1, focusComponents[i].bounds.y1, 
                 focusComponents[i].bounds.x2, focusComponents[i].bounds.y2);
@@ -74,7 +73,6 @@ function draw() {
         let lcomp = focusComponents[focusComponents.length-1];
         if(lcomp.label){
             push();
-            rectMode(CORNERS);
             fill(250);
             rect(pointer.x, pointer.y, pointer.x+textWidth(lcomp.label)+10, pointer.y-20);
             noFill();
@@ -92,6 +90,15 @@ function draw() {
                 }
             }
         }
+    }
+    if(focusJumperPointList.length>1 && keyIsDown(16)){
+        push();
+        fill(250);
+        let v = focusJumperPointList.length.toString();
+        rect(pointer.x, pointer.y, pointer.x+textWidth(v)+10, pointer.y-20);
+        noFill();
+        text(v, pointer.x+5, pointer.y-5);
+        pop();
     }
 
     stroke(40);

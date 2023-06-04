@@ -453,7 +453,7 @@ function downloadModule(){
 }
 function downloadModules(){
     let modules = [];
-    for(let i=10;i<toolbar.toolList.length;i++){
+    for(let i=11;i<toolbar.toolList.length;i++){
         modules.push(toolbar.toolList[i]);
     }
     const jsonString = JSON.stringify(modules);
@@ -481,8 +481,13 @@ function loadModules(){
             const jsonData = JSON.parse(result);
           
             for(let j=0;j<jsonData.length;j++){
-              Object.setPrototypeOf(jsonData[j], SubModule.prototype);
-              toolbar.toolList.push(jsonData[j]);
+                let flag = false;
+                for(let i=0;i<toolbar.toolList.length;i++){
+                    if(toolbar.toolList[i].name==jsonData[j].name) { flag = true; break; }
+                }
+                if(flag) continue;
+                Object.setPrototypeOf(jsonData[j], SubModule.prototype);
+                toolbar.toolList.push(jsonData[j]);
             }
         }
     });
@@ -527,12 +532,21 @@ function downloadSchematic(){
         
         schematic.jumpers.push(x);
     }
+
+    schematic.modules = [];
+    for(let i=10;i<toolbar.toolList.length;i++){
+        let flag = true;
+        for(let j=0;j<componentList.length;j++) if(componentList[j].name==toolbar.toolList[i].name) { flag = false; break; }
+        if(flag) continue;
+        schematic.modules.push(toolbar.toolList[i]);
+    }
+
     const jsonString = JSON.stringify(schematic); 
     const blob = new Blob([jsonString], { type: "application/json" });
 
     const downloadlink = document.createElement("a");
     downloadlink.href = URL.createObjectURL(blob);
-    downloadlink.download = document.getElementById("title").value;
+    downloadlink.download = document.getElementById("title").value + ".scheme";
     downloadlink.click();
 }
 
@@ -544,6 +558,15 @@ function loadSchematic(){
         var reader = new FileReader();
         reader.addEventListener('load', function() {
             var jsonData = JSON.parse(reader.result);
+            for(let j=0;j<jsonData.modules.length;j++){
+                let flag = false;
+                for(let i=0;i<toolbar.toolList.length;i++){
+                    if(toolbar.toolList[i].name==jsonData.modules[j].name) flag = true;
+                }
+                if(flag) continue;
+                Object.setPrototypeOf(jsonData.modules[j], SubModule.prototype);
+                toolbar.toolList.push(jsonData.modules[j]);
+            }
             componentList = [];
             for(let i=0;i<jsonData.components.length;i++){
               for(let j=0;j<toolbar.toolList.length;j++){
@@ -554,6 +577,7 @@ function loadSchematic(){
                       if(jsonData.components[i].length==4){
                         comp.label = jsonData.components[i][3];
                       }
+                      break;
                   }
               }
             }
