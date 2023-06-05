@@ -626,7 +626,8 @@ function loadSchematic(){
     scheme_log = [];
 }
 async function loadSchemeFromURL(url){
-    fetch(url).then(data=>data.json()).then((jsonData)=>{
+    fetch(url).then(data=>data.text()).then((jsonData)=>{
+            jsonData = JSON.parse(jsonData);
             document.getElementById("title").value = jsonData.name;
             document.getElementById('downloadMod').innerHTML = 'Export \'' + jsonData.name + '\''; 
             for(let j=0;j<jsonData.modules.length;j++){
