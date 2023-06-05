@@ -625,7 +625,71 @@ function loadSchematic(){
     input.click();
     scheme_log = [];
 }
+async function loadSchemeFromURL(url){
+    fetch(url).then(data=>data.json()).then((jsonData)=>{
+            document.getElementById("title").value = jsonData.name;
+            document.getElementById('downloadMod').innerHTML = 'Export \'' + jsonData.name + '\''; 
+            for(let j=0;j<jsonData.modules.length;j++){
+                for(let i=0;i<toolbar.toolList.length;i++){
+                    if(toolbar.toolList[i].name==jsonData.modules[j].name) { toolbar.toolList.splice(i, 1); break; }
+                }
+                Object.setPrototypeOf(jsonData.modules[j], SubModule.prototype);
+                toolbar.toolList.push(jsonData.modules[j]);
+            }
+            componentList = [];
+            for(let i=0;i<jsonData.components.length;i++){
+              for(let j=0;j<toolbar.toolList.length;j++){
+                  if(toolbar.toolList[j].name==jsonData.components[i][0]){
+                      let comp = Object.create(toolbar.toolList[j]);
+                      comp.construct(jsonData.components[i][1], jsonData.components[i][2]);
+                      componentList.push(comp);
+                      if(jsonData.components[i].length==4){
+                        comp.label = jsonData.components[i][3];
+                      }
+                      break;
+                  }
+              }
+            }
 
+            let nodes = [];
+            for(let i=0;i<componentList.length;i++){
+                for(let j=0;j<componentList[i].inputs.length;j++){
+                    nodes.push(componentList[i].inputs[j]);
+                }
+                for(let j=0;j<componentList[i].outputs.length;j++){
+                    nodes.push(componentList[i].outputs[j]);
+                }
+            }
+
+            jumperList = [];
+            for(let i=0;i<jsonData.jumpers.length;i++){
+                jumperList.push(new Jumper(null));
+            }
+
+            for(let i=0;i<jsonData.jumpers.length;i++){
+                
+                jumperList[i].anchorPoints = jsonData.jumpers[i][0];
+
+                if(jsonData.jumpers[i][1][0]==0){
+                    jumperList[i].origin = nodes[jsonData.jumpers[i][1][1]];
+                    nodes[jsonData.jumpers[i][1][1]].connectedJumpers.push(jumperList[i]);
+                }
+                else {
+                    jumperList[i].origin = jumperList[jsonData.jumpers[i][1][1]];
+                    jumperList[jsonData.jumpers[i][1][1]].connectedJumpers.push(jumperList[i]);
+                }
+
+                if(jsonData.jumpers[i][2][0]==0){
+                    jumperList[i].end = nodes[jsonData.jumpers[i][2][1]];
+                    nodes[jsonData.jumpers[i][2][1]].connectedJumpers.push(jumperList[i]);
+                }
+                else {
+                    jumperList[i].end = jumperList[jsonData.jumpers[i][2][1]];
+                    jumperList[jsonData.jumpers[i][2][1]].connectedJumpers.push(jumperList[i]);
+                }
+            }
+    });
+}
 async function loadFromURL(url){
     fetch(url).then(data=>data.json()).then((jsonData)=>{
         let exists = false;

@@ -35,9 +35,8 @@ function draw() {
 
     pointer = UI.screenToWorld(mouseX, mouseY);
     
-    gridPointer.x = int(pointer.x/10)*10;
-    gridPointer.y = int(pointer.y/10)*10;
-
+    gridPointer.x = round(pointer.x/10)*10;
+    gridPointer.y = round(pointer.y/10)*10;
     rectMode(CORNERS);
 
     push();
