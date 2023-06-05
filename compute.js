@@ -49,7 +49,6 @@ onmessage = (obj) => {
 function InitializeModule(Module){
     for(let i=0;i<Module.componentHeaders.length;++i){
         Module.componentHeaders[i].parent = Module;
-        Module.componentHeaders[i].state = 1;
         if(Module.componentHeaders[i].componentHeaders){
             Module.componentHeaders[i].activeValues = new Int8Array(Module.componentHeaders[i].componentGroups.length);
             for(let j=0;j<Module.componentHeaders[i].componentGroups.length;++j){
@@ -86,8 +85,34 @@ function setActiveValue(id, value, Module, component){
     activeValues[id] = value;
 
     for(let i=0;i<componentGroups[id].length;i++){
-        if(componentHeaders[componentGroups[id][i]] != execQueue[begin]) 
+        if(componentHeaders[componentGroups[id][i]] != component) 
             push(execQueue, componentHeaders[componentGroups[id][i]]);
+    }
+}
+
+function setActiveValueImmediate(id, value, Module, component){
+    let activeValues = Module.activeValues;
+    let componentHeaders = Module.componentHeaders;
+    let componentGroups = Module.componentGroups;
+    let activeComponents = Module.activeComponents;
+    
+    //For finite capacitance lines
+    /*if(value==-1 && (activeComponents[id] != component || component==undefined)){
+        return;
+    }*/
+    //For infinite capacitance lines
+    if(value==-1) return;
+
+    if(activeValues[id]==value) {
+        return;
+    }
+    
+    activeComponents[id] = component;
+    activeValues[id] = value;
+
+    for(let i=0;i<componentGroups[id].length;i++){
+        if(componentHeaders[componentGroups[id][i]] != component) 
+            executeComponent(componentHeaders[componentGroups[id][i]]);
     }
 }
 
@@ -124,36 +149,18 @@ function executeComponent(component){
     else if(component.name=="BUFFER"){
         if(v[1]==1) {
             setActiveValue(component.outputs[0], v[0], component.parent, component);
-            component.state = 1;
-        }
-        else {
-            setActiveValue(component.outputs[0], -1, component.parent, component);
-            component.state = -1;
         }
     }
     else if(component.parent.parent && component.name=="Output Node"){
-        if(component.parent.activeComponents[component.inputs[0]]==undefined ||
-            (component.parent.activeComponents[component.inputs[0]]!=
-            component.parent.parent.activeComponents[component.parent.outputs[component.moduleOutPin]])){
-                if(!component.parent.activeComponents[component.inputs[0]] ||
-                    component.parent.activeComponents[component.inputs[0]].state!=-1){
-                    component.state = 1;
-                    setActiveValue(component.parent.outputs[component.moduleOutPin], v[0], component.parent.parent, component);
-                }
-                else component.state = -1;
-            }
-        }
+        if(component.parent.activeComponents[component.inputs[0]] &&
+            component.parent.activeComponents[component.inputs[0]]==component.parent.parent.activeComponents[component.parent.outputs[component.moduleOutPin]]) return;
+            setActiveValueImmediate(component.parent.outputs[component.moduleOutPin], v[0], component.parent.parent, component);        
+    }
     else if(component.parent.parent && component.name=="Input Node"){
-        if(component.parent.activeComponents[component.outputs[0]]==undefined ||
-            (component.parent.activeComponents[component.outputs[0]]!=
-            component.parent.parent.activeComponents[component.parent.inputs[component.moduleInPin]]))
-            if(!component.parent.activeComponents[component.outputs[0]] || 
-                component.parent.activeComponents[component.outputs[0]].state!=-1){
-                component.state = 1;
-                setActiveValue(component.parent.inputs[component.moduleInPin], component.parent.activeValues[component.outputs[0]], 
-                component.parent.parent, component);
-            }
-            else component.state = -1;
+        if(component.parent.activeComponents[component.outputs[0]] &&
+            component.parent.activeComponents[component.outputs[0]]==component.parent.parent.activeComponents[component.parent.inputs[component.moduleInPin]]) return;
+        setActiveValueImmediate(component.parent.inputs[component.moduleInPin], component.parent.activeValues[component.outputs[0]], 
+            component.parent.parent, component);
     }
     else if(component.componentHeaders){
         for(let i=0;i<component.innerInputs.length;i++){
@@ -162,8 +169,7 @@ function executeComponent(component){
                 component.parent.activeComponents[component.inputs[i]].parent==component){
                 continue;
             }
-            if(component.parent.activeComponents[component.inputs[i]] && component.parent.activeComponents[component.inputs[i]].state==-1) continue;
-            setActiveValue(component.innerInputs[i], v[i], component,
+            setActiveValueImmediate(component.innerInputs[i], v[i], component,
                            component.parent.activeComponents[component.inputs[i]]);
         }
         for(let i=0;i<component.innerOutputs.length;i++){
@@ -172,8 +178,7 @@ function executeComponent(component){
                 component.parent.activeComponents[component.outputs[i]].parent==component){
                 continue;
             }
-            if(component.parent.activeComponents[component.outputs[i]] && component.parent.activeComponents[component.outputs[i]].state==-1) continue;
-            setActiveValue(component.innerOutputs[i], 
+            setActiveValueImmediate(component.innerOutputs[i], 
                            component.parent.activeValues[component.outputs[i]], 
                            component, component.parent.activeComponents[component.outputs[i]]);
         }

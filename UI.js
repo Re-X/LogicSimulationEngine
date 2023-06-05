@@ -339,7 +339,7 @@ function createJumpers(){
             }
         }
     }
-    else {
+    else if(!keyIsDown(17)){
         if(focusNode){
             jumperList.push(new Jumper(focusNode));
             focusNode.connectedJumpers.push(jumperList[jumperList.length-1]);
@@ -481,11 +481,9 @@ function loadModules(){
             const jsonData = JSON.parse(result);
           
             for(let j=0;j<jsonData.length;j++){
-                let flag = false;
                 for(let i=0;i<toolbar.toolList.length;i++){
-                    if(toolbar.toolList[i].name==jsonData[j].name) { flag = true; break; }
+                    if(toolbar.toolList[i].name==jsonData[j].name) { toolbar.toolList.splice(i, 1); break; }
                 }
-                if(flag) continue;
                 Object.setPrototypeOf(jsonData[j], SubModule.prototype);
                 toolbar.toolList.push(jsonData[j]);
             }
@@ -496,6 +494,7 @@ function loadModules(){
 
 function downloadSchematic(){
     let schematic = {};
+    schematic.name = document.getElementById("title").value;
     schematic.components = [];
     for(let i=0;i<componentList.length;i++){
         schematic.components.push([componentList[i].name, componentList[i].x, componentList[i].y]);
@@ -534,7 +533,7 @@ function downloadSchematic(){
     }
 
     schematic.modules = [];
-    for(let i=10;i<toolbar.toolList.length;i++){
+    for(let i=11;i<toolbar.toolList.length;i++){
         let flag = true;
         for(let j=0;j<componentList.length;j++) if(componentList[j].name==toolbar.toolList[i].name) { flag = false; break; }
         if(flag) continue;
@@ -558,12 +557,12 @@ function loadSchematic(){
         var reader = new FileReader();
         reader.addEventListener('load', function() {
             var jsonData = JSON.parse(reader.result);
+            document.getElementById("title").value = jsonData.name;
+            document.getElementById('downloadMod').innerHTML = 'Export \'' + jsonData.name + '\''; 
             for(let j=0;j<jsonData.modules.length;j++){
-                let flag = false;
                 for(let i=0;i<toolbar.toolList.length;i++){
-                    if(toolbar.toolList[i].name==jsonData.modules[j].name) flag = true;
+                    if(toolbar.toolList[i].name==jsonData.modules[j].name) { toolbar.toolList.splice(i, 1); break; }
                 }
-                if(flag) continue;
                 Object.setPrototypeOf(jsonData.modules[j], SubModule.prototype);
                 toolbar.toolList.push(jsonData.modules[j]);
             }

@@ -58,8 +58,8 @@ class Jumper {
         if(this.isTravelled) return;
         this.isTravelled = true;
 
-        this.origin.connectedJumpers.splice(this.origin.connectedJumpers.indexOf(this), 1);
-        this.end.connectedJumpers.splice(this.end.connectedJumpers.indexOf(this), 1);
+        if(this.origin!=null) this.origin.connectedJumpers.splice(this.origin.connectedJumpers.indexOf(this), 1);
+        if(this.end!=null) this.end.connectedJumpers.splice(this.end.connectedJumpers.indexOf(this), 1);
 
         let deleted_jumpers = [];
         if(deleted) deleted_jumpers = deleted;
@@ -80,11 +80,11 @@ class SubModule {
         this.outputs = [];
         
 
-        for(let i=0;i<this.innerInputs.length;i++){
+        if(this.innerInputs) for(let i=0;i<this.innerInputs.length;i++){
             this.inputs.push(new Node(x+this.bounds.x1-10, y+this.bounds.y1+20+10*i));
             if(this.inputLabels && this.inputLabels[i]) this.inputs[this.inputs.length-1].label = this.inputLabels[i];
         }
-        for(let i=0;i<this.innerOutputs.length;i++){
+        if(this.innerOutputs) for(let i=0;i<this.innerOutputs.length;i++){
             this.outputs.push(new Node(x+this.bounds.x2+10, y+this.bounds.y1+20+10*i));
             if(this.outputLabels && this.outputLabels[i]) this.outputs[this.outputs.length-1].label = this.outputLabels[i];
         }
@@ -97,10 +97,10 @@ class SubModule {
         fill(250);
         strokeWeight(1.5);
         rect(this.bounds.x1+10, this.bounds.y1+10, this.bounds.x2-10, this.bounds.y2-10);
-        for(let i=0;i<this.innerInputs.length;i++){
+        if(this.innerInputs) for(let i=0;i<this.innerInputs.length;i++){
             line(this.bounds.x1+10, this.bounds.y1+20+10*i, this.bounds.x1-10, this.bounds.y1+20+10*i);
         }
-        for(let i=0;i<this.innerOutputs.length;i++){
+        if(this.innerOutputs) for(let i=0;i<this.innerOutputs.length;i++){
             line(this.bounds.x2-10, this.bounds.y1+20+10*i, this.bounds.x2+10, this.bounds.y1+20+10*i);
         }
         fill(40);
@@ -171,7 +171,7 @@ function ParseNetwork(componentList, jumperList){
 
         let header = {};
         header.name = componentList[i].name;
-        
+        componentList[i].id = i;
         if(header.name=="Input Node"){
             header.moduleInPin = Module.innerInputs.length;
             Module.innerInputs.push(componentList[i].outputs[0].groupId);

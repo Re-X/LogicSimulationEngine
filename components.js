@@ -239,7 +239,7 @@ const inNode = {
 
     act(activeValues) {
       if(!activeValues) return;
-      userInput[2] = Module.componentHeaders.indexOf(this);
+      userInput[2] = this.id;
       userInput[1] = !activeValues[this.outputs[0].groupId];
       userInput[0] = this.outputs[0].groupId;
     }
