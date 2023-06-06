@@ -9,10 +9,15 @@ Modular Circuit Design: Users can create digital logic circuits by combining bas
 ## Basic Instructions:
 
 Right mouse click to deselect current tool (and to remove unfinished connections).
+
 Scroll over toolbar to ...scroll it.
+
 Scroll on schematic to zoom in/out.
+
 CTRL + mouse drag to move around.
+
 CTRL+Z to undo.
+
 Q/E to rotate selected tool.
 
 Input Node:  Used to define left side pins of the submodule (if created). Can be stimulated by mouse clicks.
