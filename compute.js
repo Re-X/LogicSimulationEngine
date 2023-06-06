@@ -28,7 +28,7 @@ onmessage = (obj) => {
     InitializeModule(Module);
 
     for(let i=0;i<Module.componentHeaders.length;i++){
-        if(Module.componentHeaders[i].moduleInPin!=undefined){
+        if(Module.componentHeaders[i].inputs.length==0){
             setActiveValue(Module.componentHeaders[i].outputs[0], 0, Module);
         }
     }

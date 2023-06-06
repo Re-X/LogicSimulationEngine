@@ -1,15 +1,37 @@
 const not = {
     name: "NOT",
     bounds: { x1: -18, y1: -20, x2: 32, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 24, y)];
       this.outputs = [new Node(x + 38, y)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     }, 
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       line(-24, 0, 38, 0);
       fill(250);
@@ -21,15 +43,37 @@ const not = {
 const or = {
     name: "OR",
     bounds: { x1: -18, y1: -20, x2: 30, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 36, y, 3)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
-    draw(_x=this.x, _y=this.y) {
+    draw(_x=this.x, _y=this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       fill(250);
       beginShape();
@@ -59,15 +103,37 @@ const or = {
 const nor = {
     name: "NOR",
     bounds: { x1: -18, y1: -20, x2: 37, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 42, y, 3)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
-    draw(_x=this.x, _y=this.y) {
+    draw(_x=this.x, _y=this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       fill(250);
       beginShape();
@@ -98,15 +164,37 @@ const nor = {
 const xor = {
     name: "XOR",
     bounds: { x1: -21, y1: -20, x2: 30, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 27, y - 10), new Node(x - 27, y + 10)];
       this.outputs = [new Node(x + 36, y, 3)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       noFill();
       beginShape();
@@ -147,15 +235,37 @@ const xor = {
 const and = {
     name: "AND",
     bounds: { x1: -18, y1: -20, x2: 24, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 30, y, 3)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       fill(250);
       beginShape();
@@ -181,15 +291,37 @@ const and = {
 const nand = {
     name: "NAND",
     bounds: { x1: -18, y1: -20, x2: 32, y2: 20 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 24, y - 10), new Node(x - 24, y + 10)];
       this.outputs = [new Node(x + 38, y, 3)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle = this.angle) {
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       strokeWeight(1.5);
       fill(250);
       beginShape();
@@ -216,19 +348,40 @@ const nand = {
 const inNode = {
     name: "Input Node",
     bounds: { x1: -28, y1: -13, x2: 15, y2: 13 },
-    outputs: [{ value: 0}],
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [];
       this.outputs = [new Node(x + 21, y)];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
     
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle=this.angle) {
       let v = 0;
-      if(activeValues && this.outputs[0]) v = activeValues[this.outputs[0].groupId];
+      if(activeValues && this.outputs) v = activeValues[this.outputs[0].groupId];
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       if (v==1) fill(70);
       else fill(250);
       strokeWeight(1.5);
@@ -248,18 +401,40 @@ const inNode = {
 const outNode = {
     name: "Output Node",
     bounds: { x1: -15, y1: -13, x2: 28, y2: 13 },
-    construct(x, y) {
+    construct(x, y, angle) {
       this.x = x;
       this.y = y;
       this.inputs = [new Node(x - 21, y, 0)];
       this.outputs = [];
+      this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+      if(angle){
+        this.angle = angle;
+        let r;
+        for(let i=0;i<this.inputs.length;i++){
+          r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+          this.inputs[i].x = r[0] + this.x;
+          this.inputs[i].y = r[1] + this.y;
+        }
+        for(let i=0;i<this.outputs.length;i++){
+          r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+          this.outputs[i].x = r[0] + this.x;
+          this.outputs[i].y = r[1] + this.y;
+        }
+        r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+        let x1 = r[0], y1 = r[1];
+        r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+        let x2 = r[0], y2 = r[1];
+        this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+        this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+      }
     },
 
-    draw(_x = this.x, _y = this.y) {
+    draw(_x = this.x, _y = this.y, angle=this.angle) {
       v = 0;
       if(activeValues && this.inputs) v = activeValues[this.inputs[0].groupId];
       push();
       translate(_x, _y);
+      if(angle) rotate(angle);
       if (v==1) fill(70);
       else fill(250);
       strokeWeight(1.5);
@@ -272,15 +447,37 @@ const outNode = {
 const buffer = {
   name: "BUFFER",
   bounds: { x1: -18, y1: -18, x2: 28, y2: 18 },
-  construct(x, y) {
+  construct(x, y, angle) {
     this.x = x;
     this.y = y;
     this.inputs = [new Node(x - 24, y), new Node(x, y + 23)];
     this.outputs = [new Node(x + 36, y)];
+    this.bounds = structuredClone(Object.getPrototypeOf(this).bounds);
+    if(angle){
+      this.angle = angle;
+      let r;
+      for(let i=0;i<this.inputs.length;i++){
+        r = UI.rotateVec(this.inputs[i].x - this.x, this.inputs[i].y - this.y, angle);
+        this.inputs[i].x = r[0] + this.x;
+        this.inputs[i].y = r[1] + this.y;
+      }
+      for(let i=0;i<this.outputs.length;i++){
+        r = UI.rotateVec(this.outputs[i].x - this.x, this.outputs[i].y - this.y, angle);
+        this.outputs[i].x = r[0] + this.x;
+        this.outputs[i].y = r[1] + this.y;
+      }
+      r = UI.rotateVec(this.bounds.x1, this.bounds.y1, angle);
+      let x1 = r[0], y1 = r[1];
+      r = UI.rotateVec(this.bounds.x2, this.bounds.y2, angle);
+      let x2 = r[0], y2 = r[1];
+      this.bounds.x1 = Math.min(x1, x2); this.bounds.x2 = Math.max(x1, x2);
+      this.bounds.y1 = Math.min(y1, y2); this.bounds.y2 = Math.max(y1, y2);
+    }
   }, 
-  draw(_x = this.x, _y = this.y) {
+  draw(_x = this.x, _y = this.y, angle = this.angle) {
     push();
     translate(_x, _y);
+    if(angle) rotate(angle);
     strokeWeight(1.5);
     line(-24, 0, 36, 0);
     fill(250);

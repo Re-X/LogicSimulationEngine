@@ -39,12 +39,19 @@ const UI = {
 
     mouseInWorldRect(x1, y1, x2, y2) {
         return (x1<=pointer.x && pointer.x<=x2 && y1<=pointer.y && pointer.y<=y2);
+    },
+
+    rotateVec(x, y, angle){
+        let a = Math.cos(angle);
+        let b = Math.sin(angle);
+        return [x*a - y*b, x*b + y*a];
     }
 };
 
 
 let focusTool = null;
 let selectedTool = null;
+let toolAngle = 0;
 
 let focusNode = null;
 let selectedNodeList = []; 
@@ -134,7 +141,7 @@ function mousePressed(){
         }
     }
     //add component-label
-    if(focusComponents.length){ 
+    if(focusComponents.length && !keyIsDown(17)){ 
         selectedComponent = focusComponents[0];
         
         if(state[0]==0 && selectedTool==null && document.getElementById("component-label")==null){
@@ -158,6 +165,7 @@ function mousePressed(){
 
     if(focusTool!=null) {
         selectedTool = focusTool;
+        toolAngle = 0;
         if(!keyIsDown(17)){
             if(selectedTool==del) document.getElementById('defaultCanvas0').style.cursor = 'none';
             else document.getElementById('defaultCanvas0').style.cursor = 'unset';
@@ -191,7 +199,7 @@ function mousePressed(){
     if(selectedTool!=null && !keyIsDown(17)) {
         if(selectedTool!=del) {
             let comp = Object.create(selectedTool);
-            comp.construct(gridPointer.x, gridPointer.y);
+            comp.construct(gridPointer.x, gridPointer.y, toolAngle);
             componentList.push(comp);
             scheme_log.push([2, [componentList.length-1]]);
             focusComponents.push(comp);
@@ -372,6 +380,19 @@ function keyPressed(){
     else if(keyCode==17){
         document.getElementById('defaultCanvas0').style.cursor = 'move';
     }
+
+    if(keyCode==88) selectedTool = del;
+
+    if(selectedTool!=null){
+        if(keyCode==81) {
+            toolAngle -= Math.PI/2;
+            if(toolAngle<-Math.PI) toolAngle += 2*Math.PI;
+        }
+        else if(keyCode==69) {
+            toolAngle += Math.PI/2;
+            if(toolAngle>Math.PI) toolAngle -= 2*Math.PI;
+        }
+    }
 }
 
 function keyReleased(){
@@ -501,6 +522,11 @@ function downloadSchematic(){
         if(componentList[i].label){
             schematic.components[schematic.components.length-1].push(componentList[i].label);
         }
+        else {
+            schematic.components[schematic.components.length-1].push("");
+        }
+        if(componentList[i].angle) schematic.components[schematic.components.length-1].push(componentList[i].angle);
+        else schematic.components[schematic.components.length-1].push(0);
     }
     schematic.jumpers = [];
     let k = 0;
@@ -571,9 +597,9 @@ function loadSchematic(){
               for(let j=0;j<toolbar.toolList.length;j++){
                   if(toolbar.toolList[j].name==jsonData.components[i][0]){
                       let comp = Object.create(toolbar.toolList[j]);
-                      comp.construct(jsonData.components[i][1], jsonData.components[i][2]);
+                      comp.construct(jsonData.components[i][1], jsonData.components[i][2], jsonData.components[i][4]);
                       componentList.push(comp);
-                      if(jsonData.components[i].length==4){
+                      if(jsonData.components[i][3] && jsonData.components[i][3]!=""){
                         comp.label = jsonData.components[i][3];
                       }
                       break;

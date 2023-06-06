@@ -103,8 +103,8 @@ function draw() {
     stroke(40);
     if(selectedTool!=null) {
         stroke(50, 120, 100);
-        if(selectedTool==del) selectedTool.draw(pointer.x, pointer.y);
-        else selectedTool.draw(gridPointer.x, gridPointer.y);
+        if(selectedTool==del) selectedTool.draw(pointer.x, pointer.y, toolAngle);
+        else selectedTool.draw(gridPointer.x, gridPointer.y, toolAngle);
     }
 
     if(mouseIsPressed && mouseButton==LEFT && !keyIsDown(17) && !state[0] && !topbar){

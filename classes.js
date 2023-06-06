@@ -103,7 +103,8 @@ class SubModule {
         if(this.innerOutputs) for(let i=0;i<this.innerOutputs.length;i++){
             line(this.bounds.x2-10, this.bounds.y1+20+10*i, this.bounds.x2+10, this.bounds.y1+20+10*i);
         }
-        fill(40);
+        if(this.inputs || this.outputs) fill(40);
+        else fill(50, 120, 100);
         noStroke();
         text(this.name, -textWidth(this.name)/2, (this.bounds.y1+this.bounds.y2)/2+3);
         pop();
