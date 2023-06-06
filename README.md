@@ -16,7 +16,7 @@ CTRL + mouse drag to move around.
 
 CTRL+Z to undo
 
-Q/E to rotate a tool.
+Q/E to rotate selected tool.
 
 Input Node:  Used to define left side pins of the submodule (if created). Can be stimulated by mouse clicks.
 
