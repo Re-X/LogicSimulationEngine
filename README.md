@@ -2,7 +2,7 @@
 
 Logic Simulation Engine is a browser-based simulation tool for modular digital logic circuits. It provides users with the ability to create and simulate complex chips by using basic elements and building blocks, allowing for the efficient design and analysis of digital logic systems.
 
-![image](https://github.com/Re-X/LogicSimulationEngine/assets/36952343/d7732943-df87-498a-8cde-0a9b6aefe065)
+![image](https://github.com/Re-X/LogicSimulationEngine/assets/36952343/79085524-c9a9-4ea3-b925-3626c65c27ac)
 
 Modular Circuit Design: Users can create digital logic circuits by combining basic elements (gates) into complex modules or chips. This modular approach allows for the easy design of complex circuits.
 
