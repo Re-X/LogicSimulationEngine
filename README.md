@@ -28,8 +28,11 @@ It is to be noted that either of input or output nodes can be used as input pins
 
 A component or submodule can be given a label by clicking on it. Label on input/output node component will also be visible on respective submodule pins.
 
-Placing connections: To select multiple nodes, hold shift and selected multiple points(nodes or points on jumpers or buses). You can also selected multiple nodes using selection rect, nodes will be selected when left mouse button is released and shift button is down. Connections from multiple nodes will be converged to a single bus, unless ctrl key is pressed, clicking on empty area will create anchor point for jumpers.
+### Placing connections: 
+To select multiple nodes, hold shift and select multiple points(nodes or points on jumpers or buses). You can also select multiple nodes using selection rect, nodes will be selected when left mouse button is released and shift button is down. Connections from multiple nodes will be converged to a single bus, unless ctrl key is pressed, clicking on empty area will create anchor point for jumpers.
 
-Submodule: To create a submodule from current schematic, just click the 'Create' button. Submodule name will be the same as the title. Title (by default 'Testbench') can be changed by clicking on it.
+### Submodule: 
+To create a submodule from current schematic, just click the 'Create' button. Submodule name will be the same as the title. Title (by default 'Testbench') can be changed by clicking on it.
 
-Schematics: You can download(save)/load schematics and submodules from local space or from project repository from the 'File' menu.
+### Schematics: 
+You can download(save)/load schematics and submodules from local space or from project repository from the 'File' menu.
