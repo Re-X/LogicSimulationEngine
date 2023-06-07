@@ -35,4 +35,4 @@ To select multiple nodes, hold shift and select multiple points(nodes or points 
 To create a submodule from current schematic, just click the 'Create' button. Submodule name will be the same as the title. Title (by default 'Testbench') can be changed by clicking on it.
 
 ### Schematics: 
-You can download(save)/load schematics and submodules from local space or from project repository from the 'File' menu.
+You can download(save)/load schematics and submodules from local space or from project repository from the 'File' menu
