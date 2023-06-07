@@ -111,6 +111,18 @@ class SubModule {
     }
 }
 
+function binSearch(arr, e){
+    let a = 0, b = arr.length;
+    let m;
+    while(a<b){
+        m = (a+b)>>1;
+        if(arr[m]>e) b = m;
+        else if(arr[m]<e) a = m+1;
+        else return m;
+    }
+    return -1;
+}
+
 function ParseNetwork(componentList, jumperList){
     let Module = {};
 
@@ -131,11 +143,11 @@ function ParseNetwork(componentList, jumperList){
     for(let i=0;i<jumperList.length;i++){
         jumperList[i].isTravelled = false;    
     }
-    Module.nodeGroups = [];
+    nodeGroups = [];
     for(let i=0;i<jumperList.length;i++){
         if(!jumperList[i].isTravelled) {
-            Module.nodeGroups.push([]);
-            jumperList[i].travel(Module.nodeGroups.length-1, Module.nodeGroups);
+            nodeGroups.push([]);
+            jumperList[i].travel(nodeGroups.length-1, nodeGroups);
         } 
     }
 
@@ -143,20 +155,20 @@ function ParseNetwork(componentList, jumperList){
     for(let i=0;i<componentList.length;i++){
         for(let j=0;j<componentList[i].inputs.length;j++){
             if(componentList[i].inputs[j].groupId==-1) {
-                componentList[i].inputs[j].groupId = Module.nodeGroups.length;
-                Module.nodeGroups.push([componentList[i].inputs[j].nodeId]);
+                componentList[i].inputs[j].groupId = nodeGroups.length;
+                nodeGroups.push([componentList[i].inputs[j].nodeId]);
             }
         }
         for(let j=0;j<componentList[i].outputs.length;j++){
             if(componentList[i].outputs[j].groupId==-1) {
-                componentList[i].outputs[j].groupId = Module.nodeGroups.length;
-                Module.nodeGroups.push([componentList[i].outputs[j].nodeId]);
+                componentList[i].outputs[j].groupId = nodeGroups.length;
+                nodeGroups.push([componentList[i].outputs[j].nodeId]);
             }
         }
     }
 
     Module.componentGroups = [];
-    for(let i=0;i<Module.nodeGroups.length;i++) Module.componentGroups.push([]);
+    for(let i=0;i<nodeGroups.length;i++) Module.componentGroups.push([]);
     Module.componentHeaders = [];
     Module.innerInputs = [];
     Module.innerOutputs = [];
@@ -164,10 +176,12 @@ function ParseNetwork(componentList, jumperList){
     Module.outputLabels = [];
     for(let i=0;i<componentList.length;i++){
         for(let j=0;j<componentList[i].inputs.length;j++){
-            Module.componentGroups[componentList[i].inputs[j].groupId].push(i);
+            if(binSearch(Module.componentGroups[componentList[i].inputs[j].groupId], i)==-1) 
+                Module.componentGroups[componentList[i].inputs[j].groupId].push(i);
         }
         for(let j=0;j<componentList[i].outputs.length;j++){
-            Module.componentGroups[componentList[i].outputs[j].groupId].push(i);
+            if(binSearch(Module.componentGroups[componentList[i].outputs[j].groupId], i)==-1)
+                Module.componentGroups[componentList[i].outputs[j].groupId].push(i);
         }
 
         let header = {};
@@ -195,7 +209,6 @@ function ParseNetwork(componentList, jumperList){
             header.outputs.push(componentList[i].outputs[j].groupId);
         }
         if(componentList[i].componentHeaders){
-            header.nodeGroups = componentList[i].nodeGroups;
             header.componentGroups = componentList[i].componentGroups;
             header.componentHeaders = structuredClone(componentList[i].componentHeaders);
             header.innerInputs = componentList[i].innerInputs;
@@ -203,6 +216,5 @@ function ParseNetwork(componentList, jumperList){
         }
         Module.componentHeaders.push(header);
     }
-    delete Module.nodeGroups;
     return Module;
 }
