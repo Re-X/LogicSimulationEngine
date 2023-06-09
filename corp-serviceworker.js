@@ -26,13 +26,14 @@ if(typeof window === 'undefined'){
     });
 }
 else {
-    if(window.crossOriginIsolated) return;
-    navigator.serviceWorker.register(document.currentScript.src).then(
-        (reg)=>{
-            reg.addEventListener('updatefound', ()=>{ location.reload(); });
-            if(reg.active && !navigator.serviceWorker.controller){
-                location.reload();
+    if(window.crossOriginIsolated === false) {
+        navigator.serviceWorker.register(document.currentScript.src).then(
+            (reg)=>{
+                reg.addEventListener('updatefound', ()=>{ location.reload(); });
+                if(reg.active && !navigator.serviceWorker.controller){
+                    location.reload();
+                }
             }
-        }
-    )
+        )
+    }
 }
