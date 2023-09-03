@@ -64,7 +64,7 @@ let selectedComponent = null;
 let selectionRect = { x1: 0, y1: 0, x2: 0, y2: 0, selectedNodes: [] };
 let componentQuery = "";
 const toolbar = {
-    toolList: [inNode, outNode, not, or, nor, xor, and, nand, buffer, del, disp8],
+    toolList: [inNode, outNode, not, or, nor, xor, and, nand, buffer, del, disp8, ascii8],
     x: 0, y: 0,
     mouseOver(){
         return mouseX>=this.x-22.5 && mouseX<=this.x+22.5;
@@ -100,7 +100,8 @@ const toolbar = {
                 else this.toolList[i].draw(0, ty);
             }
             pop();
-            ty += 60;
+            if(this.toolList[i].bounds) ty += 20 + this.toolList[i].bounds.y2 - this.toolList[i].bounds.y1;
+            else ty += 60;
         }
         pop();
     }
@@ -474,7 +475,7 @@ function downloadModule(){
 }
 function downloadModules(){
     let modules = [];
-    for(let i=11;i<toolbar.toolList.length;i++){
+    for(let i=12;i<toolbar.toolList.length;i++){
         modules.push(toolbar.toolList[i]);
     }
     const jsonString = JSON.stringify(modules);

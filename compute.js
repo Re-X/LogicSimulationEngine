@@ -124,27 +124,27 @@ function executeComponent(component){
 
     if(component.name=="NOT"){
         setActiveValue(component.outputs[0], 
-            !v[0], component.parent, component);
+            (!v[0]) != 0, component.parent, component);
     }
     else if(component.name=="OR"){
         setActiveValue(component.outputs[0], 
-                       v[0] || v[1], component.parent, component);
+                       (v[0] || v[1]) != 0, component.parent, component);
     }
     else if(component.name=="NOR"){
         setActiveValue(component.outputs[0], 
-                       !(v[0] || v[1]), component.parent, component);
+                       !(v[0] || v[1]) != 0, component.parent, component);
     }
     else if(component.name=="XOR"){
         setActiveValue(component.outputs[0], 
-                       v[0] ^ v[1], component.parent, component);
+                       (v[0] ^ v[1]) != 0, component.parent, component);
     }
     else if(component.name=="AND"){
         setActiveValue(component.outputs[0], 
-                       v[0] && v[1], component.parent, component);
+                       (v[0] && v[1]) != 0, component.parent, component);
     }
     else if(component.name=="NAND"){
         setActiveValue(component.outputs[0], 
-                       !(v[0] && v[1]), component.parent, component);
+                       !(v[0] && v[1]) != 0, component.parent, component);
     }
     else if(component.name=="BUFFER"){
         if(v[1]==1) {
